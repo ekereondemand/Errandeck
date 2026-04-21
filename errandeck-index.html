@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta name="theme-color" content="#FF5500"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<title>Errandeck — Errands Sorted. Stress Deleted.</title>
+<style>
+/* ─── RESET & BASE ─────────────────────────────── */
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;width:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;-webkit-font-smoothing:antialiased;}
+
+:root{
+  --orange:#FF5500;
+  --orange2:#FF6B1A;
+  --black:#0A0A0A;
+  --bg:#F7F7F5;
+  --card:#FFFFFF;
+  --border:rgba(0,0,0,0.09);
+  --text:#0A0A0A;
+  --muted:#6B6B6B;
+  --hint:#AAAAAA;
+  --green:#1A7A42;
+  --green-bg:#EDFAF3;
+  --blue:#1A4BAA;
+  --blue-bg:#EBF2FF;
+  --amber:#7A4900;
+  --amber-bg:#FFF8E6;
+  --red:#CC2200;
+  --red-bg:#FFF0EB;
+  --r:16px;
+  --rsm:10px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-top: env(safe-area-inset-top, 0px);
+}
+
+/* ─── APP SHELL ─────────────────────────────────── */
+#app{
+  position:fixed;
+  inset:0;
+  background:var(--bg);
+  display:flex;
+  flex-direction:column;
+  max-width:480px;
+  margin:0 auto;
+}
+
+/* ─── SCREENS ───────────────────────────────────── */
+.screen{
+  display:none;
+  flex-direction:column;
+  height:100%;
+  width:100%;
+  position:absolute;
+  top:0; left:0;
+  background:var(--bg);
+  overflow:hidden;
+}
+.screen.active{display:flex;}
+
+/* Transition */
+.screen.slide-in{animation:slideIn .22s ease-out;}
+.screen.slide-back{animation:slideBack .22s ease-out;}
+@keyframes slideIn{from{transform:translateX(100%)}to{transform:translateX(0)}}
+@keyframes slideBack{from{transform:translateX(-30%)}to{transform:translateX(0)}}
+
+/* ─── SCROLLABLE CONTENT ─────────────────────────── */
+.scroll{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;}
+.scroll::-webkit-scrollbar{display:none;}
+
+/* ─── STATUS BAR SAFE AREA ────────────────────────── */
+.safe-top{padding-top:max(var(--safe-top), 16px);}
+.safe-bottom{padding-bottom:max(var(--safe-bottom), 8px);}
+
+/* ─── TOPBAR ─────────────────────────────────────── */
+.topbar{
+  display:flex;align-items:center;gap:10px;
+  padding:12px 16px;
+  background:var(--card);
+  border-bottom:0.5px solid var(--border);
+  flex-shrink:0;
+  padding-top:max(var(--safe-top),12px);
+}
+.topbar-title{font-size:16px;font-weight:600;color:var(--text);flex:1;}
+.back-btn{
+  width:36px;height:36px;border-radius:var(--rsm);
+  background:var(--bg);border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;color:var(--muted);flex-shrink:0;
+}
+
+/* ─── BOTTOM NAV ─────────────────────────────────── */
+.bnav{
+  display:flex;
+  background:var(--card);
+  border-top:0.5px solid var(--border);
+  padding-bottom:max(var(--safe-bottom),8px);
+  flex-shrink:0;
+}
+.ntab{
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:3px;padding:10px 4px 6px;
+  border:none;background:none;cursor:pointer;
+}
+.ntab span{font-size:10px;font-weight:600;letter-spacing:.2px;}
+.ntab.on span,.ntab.on svg{color:var(--orange);}
+.ntab:not(.on) span,.ntab:not(.on) svg{color:var(--hint);}
+.ntab svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
+
+/* ─── COMMON COMPONENTS ──────────────────────────── */
+.btn-primary{
+  width:100%;padding:15px;
+  background:var(--orange);color:#fff;
+  border:none;border-radius:var(--r);
+  font-size:16px;font-weight:600;cursor:pointer;
+  transition:opacity .15s;font-family:inherit;
+  letter-spacing:.2px;
+}
+.btn-primary:active{opacity:.82;}
+.btn-primary:disabled{opacity:.4;cursor:default;}
+
+.btn-secondary{
+  width:100%;padding:15px;
+  background:var(--bg);color:var(--text);
+  border:0.5px solid var(--border);border-radius:var(--r);
+  font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;
+}
+
+.inp{
+  width:100%;padding:13px 14px;
+  background:var(--bg);border:0.5px solid var(--border);
+  border-radius:var(--rsm);font-size:15px;color:var(--text);
+  outline:none;font-family:inherit;
+  -webkit-appearance:none;
+}
+.inp:focus{border-color:var(--orange);}
+
+.lbl{font-size:13px;font-weight:600;color:var(--muted);margin-bottom:6px;display:block;}
+
+.card{background:var(--card);border:0.5px solid var(--border);border-radius:var(--r);padding:16px;}
+.card-dark{background:var(--black);border-radius:var(--r);padding:18px;}
+
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;}
+.badge-open{background:var(--red-bg);color:var(--red);}
+.badge-assigned{background:var(--blue-bg);color:var(--blue);}
+.badge-progress{background:var(--amber-bg);color:var(--amber);}
+.badge-done{background:var(--green-bg);color:var(--green);}
+.badge-new{background:var(--blue-bg);color:var(--blue);}
+
+.section-label{font-size:11px;font-weight:700;color:var(--hint);text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px;}
+
+.divider{height:0.5px;background:var(--border);margin:14px 0;}
+
+/* Task row */
+.task-row{
+  display:flex;align-items:flex-start;gap:12px;
+  padding:14px;background:var(--card);
+  border:0.5px solid var(--border);border-radius:var(--r);
+  cursor:pointer;transition:transform .1s;
+  margin-bottom:10px;
+}
+.task-row:active{transform:scale(.98);}
+.cat-icon{
+  width:46px;height:46px;border-radius:var(--rsm);
+  background:var(--bg);display:flex;align-items:center;
+  justify-content:center;font-size:22px;flex-shrink:0;
+}
+
+/* Progress bar */
+.pbar{height:5px;background:var(--bg);border-radius:4px;overflow:hidden;margin-top:8px;}
+.pfill{height:100%;background:var(--orange);border-radius:4px;transition:width .4s;}
+
+/* Milestone */
+.ms-row{display:flex;gap:12px;align-items:flex-start;}
+.ms-dot{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;margin-top:1px;}
+.ms-dot.done{background:var(--green-bg);color:var(--green);}
+.ms-dot.active{background:var(--orange);color:#fff;}
+.ms-dot.pending{background:var(--bg);color:var(--hint);border:1.5px solid var(--border);}
+.ms-line{width:2px;height:24px;margin:3px auto;border-radius:2px;}
+.ms-line.done{background:var(--green);}
+.ms-line.pending{background:var(--border);}
+
+/* Chat */
+.bubble-me{background:var(--orange);color:#fff;border-radius:18px 18px 4px 18px;padding:11px 15px;max-width:76%;font-size:14px;line-height:1.5;align-self:flex-end;}
+.bubble-them{background:var(--card);border:0.5px solid var(--border);border-radius:18px 18px 18px 4px;padding:11px 15px;max-width:76%;font-size:14px;line-height:1.5;}
+.chat-time{font-size:10px;color:var(--hint);margin-top:3px;}
+
+/* OTP */
+.otp-wrap{display:flex;gap:8px;justify-content:center;}
+.otp-input{
+  flex:1;max-width:48px;height:56px;
+  text-align:center;font-size:22px;font-weight:700;
+  background:var(--bg);border:1.5px solid var(--border);
+  border-radius:var(--rsm);color:var(--text);
+  outline:none;font-family:inherit;
+  -webkit-appearance:none;
+}
+.otp-input:focus{border-color:var(--orange);}
+
+/* Tab switcher */
+.tabs{display:flex;background:var(--bg);border-radius:var(--rsm);padding:3px;gap:2px;}
+.tab-btn{
+  flex:1;padding:9px;border-radius:8px;
+  border:none;font-size:13px;font-weight:600;
+  cursor:pointer;background:none;color:var(--muted);
+  font-family:inherit;transition:all .15s;
+}
+.tab-btn.on{background:var(--card);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.08);}
+
+/* Feed earn tag */
+.earn-tag{background:var(--green-bg);border:0.5px solid #B8E8CC;border-radius:8px;padding:4px 9px;font-size:13px;font-weight:700;color:var(--green);white-space:nowrap;}
+
+/* Category grid */
+.cat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.cat-tile{
+  padding:14px 8px;background:var(--card);
+  border:0.5px solid var(--border);border-radius:var(--r);
+  text-align:center;cursor:pointer;
+  transition:all .15s;
+}
+.cat-tile:active{transform:scale(.96);}
+.cat-tile .ci{font-size:26px;margin-bottom:6px;}
+.cat-tile .cl{font-size:12px;font-weight:600;color:var(--muted);}
+
+/* Quick pills */
+.pills{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;}
+.pills::-webkit-scrollbar{display:none;}
+.pill{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:8px 14px;border-radius:40px;font-size:13px;
+  font-weight:600;cursor:pointer;white-space:nowrap;
+  border:0.5px solid var(--border);background:var(--card);
+  color:var(--muted);transition:all .15s;flex-shrink:0;
+}
+.pill.on{background:var(--orange);color:#fff;border-color:var(--orange);}
+
+/* Stats grid */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.stat-card{background:var(--card);border:0.5px solid var(--border);border-radius:var(--r);padding:16px;text-align:center;}
+.stat-num{font-size:24px;font-weight:700;color:var(--orange);}
+.stat-lbl{font-size:11px;color:var(--muted);margin-top:3px;}
+
+/* Wallet card */
+.wallet-card{background:var(--black);border-radius:var(--r);padding:22px;text-align:center;color:#fff;}
+.wallet-bal{font-size:36px;font-weight:700;margin:6px 0;}
+.wallet-lbl{font-size:12px;color:rgba(255,255,255,.5);}
+
+/* Payment breakdown */
+.breakdown{background:var(--bg);border-radius:var(--rsm);padding:14px;border:0.5px solid var(--border);}
+.breakdown-row{display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px;}
+.breakdown-row:last-child{margin-bottom:0;font-weight:700;font-size:15px;padding-top:8px;border-top:0.5px solid var(--border);}
+
+/* Notification dot */
+.notif-dot{position:absolute;top:6px;right:6px;width:9px;height:9px;background:var(--orange);border-radius:50%;border:2px solid var(--card);}
+
+/* Toggle */
+.toggle{width:46px;height:26px;border-radius:13px;background:var(--orange);border:none;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0;}
+.toggle::after{content:'';position:absolute;top:3px;left:23px;width:20px;height:20px;background:#fff;border-radius:50%;transition:left .18s;box-shadow:0 1px 3px rgba(0,0,0,.2);}
+.toggle.off{background:var(--border);}
+.toggle.off::after{left:3px;}
+
+/* Role selector */
+.role-card{
+  padding:16px;border-radius:var(--r);text-align:center;
+  cursor:pointer;border:2px solid var(--border);
+  background:var(--bg);transition:all .15s;
+}
+.role-card.selected{border-color:var(--orange);background:rgba(255,85,0,.06);}
+.role-card .ri{font-size:28px;margin-bottom:6px;}
+.role-card .rl{font-size:14px;font-weight:600;color:var(--muted);}
+.role-card.selected .rl{color:var(--orange);}
+
+/* Notification info box */
+.info-box{border-radius:var(--rsm);padding:12px 14px;font-size:13px;line-height:1.5;}
+.info-orange{background:rgba(255,85,0,.08);border:0.5px solid rgba(255,85,0,.2);color:var(--orange);}
+.info-amber{background:var(--amber-bg);border:0.5px solid #F5C875;color:var(--amber);}
+.info-green{background:var(--green-bg);border:0.5px solid #B8E8CC;color:var(--green);}
+.info-blue{background:var(--blue-bg);border:0.5px solid #B5D4F4;color:var(--blue);}
+
+/* Split row */
+.split-row{display:flex;justify-content:space-between;font-size:14px;padding:7px 0;border-bottom:0.5px solid var(--border);}
+.split-row:last-child{border-bottom:none;font-weight:700;font-size:15px;}
+
+/* Step indicator */
+.step-indicator{display:flex;align-items:center;gap:4px;margin-bottom:20px;}
+.step-dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:background .2s;}
+.step-dot.active{background:var(--orange);width:22px;border-radius:4px;}
+.step-dot.done{background:var(--green);}
+
+/* Map placeholder */
+.map-block{
+  background:#e8ead8;border-radius:var(--r);overflow:hidden;
+  position:relative;cursor:pointer;
+}
+.map-overlay{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  background:rgba(0,0,0,.4);border-radius:var(--r);
+}
+.map-overlay span{color:#fff;font-size:14px;font-weight:600;background:rgba(0,0,0,.55);padding:8px 18px;border-radius:20px;}
+
+/* Nav instruction */
+.nav-instruction{
+  background:var(--blue);border-radius:var(--r);
+  padding:14px 16px;display:flex;align-items:center;gap:12px;margin-bottom:12px;
+}
+.turn-box{width:40px;height:40px;background:rgba(255,255,255,.2);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+
+/* Stop pill */
+.stop-pill{
+  flex:1;padding:10px;border-radius:var(--rsm);
+  border:1.5px solid var(--border);text-align:center;cursor:pointer;
+  transition:all .15s;
+}
+.stop-pill.active-stop{border-color:var(--orange);background:var(--red-bg);}
+.stop-pill.done-stop{opacity:.5;}
+
+/* Checklist */
+.check-item{
+  display:flex;align-items:center;gap:12px;
+  padding:12px;border-radius:var(--rsm);
+  background:var(--bg);cursor:pointer;
+  margin-bottom:8px;transition:background .15s;
+}
+.check-circle{
+  width:22px;height:22px;border-radius:50%;
+  border:1.5px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;transition:all .15s;
+}
+.check-circle.checked{background:var(--green);border-color:var(--green);color:#fff;font-size:12px;font-weight:700;}
+
+/* ETA strip */
+.eta-strip{display:flex;background:var(--card);border:0.5px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:14px;}
+.eta-seg{flex:1;padding:12px;text-align:center;border-right:0.5px solid var(--border);}
+.eta-seg:last-child{border-right:none;}
+.eta-val{font-size:17px;font-weight:700;}
+.eta-lbl{font-size:10px;color:var(--muted);margin-top:2px;}
+
+/* Vendor menu toggle */
+.menu-toggle{width:40px;height:22px;border-radius:11px;background:var(--orange);position:relative;cursor:pointer;border:none;}
+.menu-toggle::after{content:'';position:absolute;top:2px;right:2px;width:18px;height:18px;background:#fff;border-radius:50%;box-shadow:0 1px 2px rgba(0,0,0,.2);}
+.menu-toggle.off{background:var(--border);}
+.menu-toggle.off::after{left:2px;right:auto;}
+
+/* Alert pulse */
+@keyframes alertPulse{0%,100%{opacity:1}50%{opacity:.4}}
+.alert-pulse{animation:alertPulse 1.5s infinite;}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ════════════════════════════════════════════════
+     SCREEN: LOGIN
+════════════════════════════════════════════════ -->
+<div class="screen active" id="s-login">
+  <div class="scroll">
+    <!-- Hero dark section -->
+    <div style="background:var(--black);padding:max(var(--safe-top),48px) 24px 32px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:32px;">
+        <div style="width:40px;height:40px;background:var(--orange);border-radius:12px;display:flex;align-items:center;justify-content:center;">
+          <svg style="width:20px;height:20px;fill:none;stroke:#fff;stroke-width:2.2;stroke-linecap:round;" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        </div>
+        <span style="color:#fff;font-size:22px;font-weight:700;letter-spacing:-.3px;">Errandeck</span>
+      </div>
+      <h1 style="color:#fff;font-size:30px;font-weight:700;line-height:1.2;margin-bottom:8px;">Errands sorted.<br>Stress deleted.</h1>
+      <p style="color:rgba(255,255,255,.55);font-size:15px;">Lagos's most trusted errand platform</p>
+    </div>
+
+    <!-- Login form card -->
+    <div style="background:var(--card);border-radius:28px 28px 0 0;margin-top:-20px;padding:28px 20px;min-height:calc(100vh - 220px);">
+      <div style="margin-bottom:18px;">
+        <label class="lbl">Phone number</label>
+        <div style="display:flex;align-items:center;gap:0;background:var(--bg);border:0.5px solid var(--border);border-radius:var(--rsm);overflow:hidden;">
+          <div style="padding:13px 14px;font-size:15px;font-weight:600;color:var(--muted);border-right:0.5px solid var(--border);white-space:nowrap;background:var(--bg);">🇳🇬 +234</div>
+          <input id="phone-in" class="inp" style="border:none;border-radius:0;background:var(--bg);flex:1;" type="tel" inputmode="numeric" placeholder="080 123 4567"/>
+        </div>
+      </div>
+
+      <div style="margin-bottom:20px;">
+        <label class="lbl">I am a...</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div class="role-card selected" id="role-client" onclick="pickRole('client')">
+            <div class="ri">📋</div>
+            <div class="rl">Client</div>
+            <div style="font-size:11px;color:var(--hint);margin-top:3px;">Post errands</div>
+          </div>
+          <div class="role-card" id="role-tasker" onclick="pickRole('tasker')">
+            <div class="ri">🏃</div>
+            <div class="rl">Tasker</div>
+            <div style="font-size:11px;color:var(--hint);margin-top:3px;">Run errands</div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-primary" onclick="goOTP()" style="margin-bottom:12px;">Get OTP →</button>
+      <p style="text-align:center;font-size:12px;color:var(--hint);">One-time password via SMS. No password needed.</p>
+
+      <div class="divider"></div>
+      <div class="info-box info-amber">
+        <b>Demo mode:</b> Enter any Nigerian number, any 6-digit OTP to explore the app.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     SCREEN: OTP
+════════════════════════════════════════════════ -->
+<div class="screen" id="s-otp">
+  <div class="topbar">
+    <button class="back-btn" onclick="go('s-login')">←</button>
+    <div class="topbar-title">Verify your number</div>
+  </div>
+  <div class="scroll" style="padding:24px 20px;">
+    <p style="font-size:15px;color:var(--muted);margin-bottom:24px;">Enter the 6-digit code sent to <b id="otp-num-display" style="color:var(--text);">+234 080 ***</b></p>
+    <div class="otp-wrap" style="margin-bottom:28px;">
+      <input class="otp-input" id="o0" maxlength="1" type="text" inputmode="numeric" oninput="otpIn(0,this)"/>
+      <input class="otp-input" id="o1" maxlength="1" type="text" inputmode="numeric" oninput="otpIn(1,this)"/>
+      <input class="otp-input" id="o2" maxlength="1" type="text" inputmode="numeric" oninput="otpIn(2,this)"/>
+      <input class="otp-input" id="o3" maxlength="1" type="text" inputmode="numeric" oninput="otpIn(3,this)"/>
+      <input class="otp-input" id="o4" maxlength="1" type="text" inputmode="numeric" oninput="otpIn(4,this)"/>
+      <input class="otp-input" id="o5" maxlength="1" type="text" inputmode="numeric" oninput="otpIn(5,this)"/>
+    </div>
+    <button class="btn-primary" id="otp-btn" onclick="verifyOTP()" disabled>Verify</button>
+    <p style="text-align:center;margin-top:16px;font-size:13px;color:var(--hint);">Didn't get it? <span style="color:var(--orange);font-weight:600;cursor:pointer;" onclick="go('s-login')">Resend</span></p>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     SCREEN: CLIENT HOME
+════════════════════════════════════════════════ -->
+<div class="screen" id="s-client-home">
+  <div class="topbar" style="justify-content:space-between;">
+    <div>
+      <p style="font-size:13px;color:var(--muted);">Good day 👋</p>
+      <div class="topbar-title">Chioma</div>
+    </div>
+    <button style="width:40px;height:40px;background:var(--bg);border:0.5px solid var(--border);border-radius:var(--rsm);cursor:pointer;display:flex;align-items:center;justify-content:center;position:relative;" onclick="alert('Notification: Emeka reached milestone 5 — En route to delivery address')">
+      <svg style="width:20px;height:20px;fill:none;stroke:var(--muted);stroke-width:1.7;stroke-linecap:round;" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <div class="notif-dot"></div>
+    </button>
+  </div>
+
+  <div class="scroll" style="padding:16px 16px 16px;">
+    <!-- Hero CTA -->
+    <div class="card-dark" style="margin-bottom:16px;cursor:pointer;" onclick="go('s-post-task')">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div style="flex:1;margin-right:12px;">
+          <p style="color:#fff;font-size:18px;font-weight:700;margin-bottom:5px;">Need something done?</p>
+          <p style="color:rgba(255,255,255,.5);font-size:13px;">Verified Taskers ready in your area</p>
+        </div>
+        <div style="width:44px;height:44px;background:var(--orange);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg style="width:20px;height:20px;fill:none;stroke:#fff;stroke-width:2.5;stroke-linecap:round;" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;margin-top:14px;">
+        <div style="flex:1;background:rgba(255,255,255,.1);border-radius:8px;padding:8px;text-align:center;font-size:18px;">🛒</div>
+        <div style="flex:1;background:rgba(255,255,255,.1);border-radius:8px;padding:8px;text-align:center;font-size:18px;">📦</div>
+        <div style="flex:1;background:rgba(255,255,255,.1);border-radius:8px;padding:8px;text-align:center;font-size:18px;">🍱</div>
+        <div style="flex:1;background:rgba(255,255,255,.1);border-radius:8px;padding:8px;text-align:center;font-size:18px;">💡</div>
+      </div>
+    </div>
+
+    <!-- Active tasks -->
+    <p class="section-label">Active tasks</p>
+    <div class="task-row" onclick="go('s-tracking')">
+      <div class="cat-icon">🛒</div>
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:4px;">
+          <p style="font-size:14px;font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Buy groceries from Shoprite Ikeja</p>
+          <span class="badge badge-progress" style="flex-shrink:0;">In progress</span>
+        </div>
+        <p style="font-size:12px;color:var(--muted);">Emeka O. · Due 2:00 PM</p>
+        <div class="pbar"><div class="pfill" style="width:67%"></div></div>
+        <p style="font-size:11px;color:var(--hint);margin-top:4px;">4 / 6 milestones</p>
+      </div>
+    </div>
+    <div class="task-row" onclick="go('s-tracking')">
+      <div class="cat-icon">📦</div>
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:4px;">
+          <p style="font-size:14px;font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Pick up package from Yaba market</p>
+          <span class="badge badge-assigned" style="flex-shrink:0;">Assigned</span>
+        </div>
+        <p style="font-size:12px;color:var(--muted);">Funke A. · Due 4:30 PM</p>
+        <p style="font-size:11px;color:var(--hint);margin-top:4px;">Awaiting payment</p>
+      </div>
+    </div>
+
+    <!-- Quick categories -->
+    <p class="section-label" style="margin-top:18px;">Post a new task</p>
+    <div class="cat-grid" style="margin-bottom:20px;">
+      <div class="cat-tile" onclick="go('s-post-task')"><div class="ci">🛒</div><div class="cl">Grocery</div></div>
+      <div class="cat-tile" onclick="go('s-post-task')"><div class="ci">📦</div><div class="cl">Delivery</div></div>
+      <div class="cat-tile" onclick="go('s-post-task')"><div class="ci">🍱</div><div class="cl">Food</div></div>
+      <div class="cat-tile" onclick="go('s-post-task')"><div class="ci">💡</div><div class="cl">Bills</div></div>
+      <div class="cat-tile" onclick="go('s-post-task')"><div class="ci">🏦</div><div class="cl">Queue</div></div>
+      <div class="cat-tile" onclick="go('s-post-task')"><div class="ci">✨</div><div class="cl">Other</div></div>
+    </div>
+  </div>
+
+  <div class="bnav">
+    <button class="ntab on"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Home</span></button>
+    <button class="ntab" onclick="go('s-tracking')"><svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg><span>Tasks</span></button>
+    <button class="ntab" onclick="go('s-chat')"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Chat</span></button>
+    <button class="ntab"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Profile</span></button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     SCREEN: POST TASK
+════════════════════════════════════════════════ -->
+<div class="screen" id="s-post-task">
+  <div class="topbar">
+    <button class="back-btn" onclick="go('s-client-home')">←</button>
+    <div>
+      <div class="topbar-title">Post a task</div>
+      <div style="font-size:11px;color:var(--hint);">Step <span id="post-step-lbl">1</span> of 4</div>
+    </div>
+  </div>
+  <!-- Progress bar -->
+  <div style="height:3px;background:var(--bg);flex-shrink:0;"><div id="post-progress" style="height:100%;background:var(--orange);transition:width .3s;width:25%;border-radius:2px;"></div></div>
+
+  <div class="scroll" style="padding:20px 16px 100px;">
+    <!-- Step 1: Category -->
+    <div id="ps1">
+      <h2 style="font-size:20px;font-weight:700;margin-bottom:6px;">What type of task?</h2>
+      <p style="font-size:14px;color:var(--muted);margin-bottom:18px;">Choose the category that best fits</p>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div onclick="pickCat('grocery');nextPostStep()" style="display:flex;align-items:center;gap:14px;padding:16px;background:var(--card);border:0.5px solid var(--border);border-radius:var(--r);cursor:pointer;transition:transform .1s;" ontouchstart="this.style.transform='scale(.98)'" ontouchend="this.style.transform=''">
+          <span style="font-size:28px;">🛒</span>
+          <div><p style="font-size:15px;font-weight:600;">Grocery & Shopping</p><p style="font-size:12px;color:var(--muted);">Market runs, supermarket, specific items</p></div>
+        </div>
+        <div onclick="pickCat('delivery');nextPostStep()" style="display:flex;align-items:center;gap:14px;padding:16px;background:var(--card);border:0.5px solid var(--border);border-radius:var(--r);cursor:pointer;" ontouchstart="this.style.transform='scale(.98)'" ontouchend="this.style.transform=''">
+          <span style="font-size:28px;">📦</span>
+          <div><p style="font-size:15px;font-weight:600;">Delivery & Pickup</p><p style="font-size:12px;color:var(--muted);">Packages, drop-offs, collections</p></div>
+        </div>
+        <div onclick="pickCat('food');nextPostStep()" style="display:flex;align-items:center;gap:14px;padding:16px;background:var(--card);border:0.5px solid var(--border);border-radius:var(--r);cursor:pointer;" ontouchstart="this.style.transform='scale(.98)'" ontouchend="this.style.transform=''">
+          <span style="font-size:28px;">🍱</span>
+          <div><p style="font-size:15px;font-weight:600;">Food & Beverages</p><p style="font-size:12px;color:var(--muted);">Restaurants, mama put, takeaway</p></div>
+        </div>
+        <div onclick="pickCat('utility');nextPostStep()" style="display:flex;align-items:center;gap:14px;padding:16px;background:var(--card);border:0.5px solid var(--border);border-radius:var(--r);cursor:pointer;" ontouchstart="this.style.transform='scale(.98)'" ontouchend="this.style.transform=''">
+          <span style="font-size:28px;">💡</span>
+          <div><p style="font-size:15px;font-weight:600;">Utility & Bills</p><p style="font-size:12px;color:var(--muted);">NEPA tokens, DSTV, airtime, bank</p></div>
+        </div>
+        <div onclick="pickCat('queue');nextPostStep()" style="display:flex;align-items:center;gap:14px;padding:16px;background:var(--card);border:0.5px solid var(--border);border-radius:var(--r);cursor:pointer;" ontouchstart="this.style.transform='scale(.98)'" ontouchend="this.style.transform=''">
+          <span style="font-size:28px;">🏦</span>
+          <div><p style="font-size:15px;font-weight:600;">Queue Management</p><p style="font-size:12px;color:var(--muted);">Banks, hospitals, government offices</p></div>
+        </div>
+        <div onclick="pickCat('miscellaneous');nextPostStep()" style="display:flex;align-items:center;gap:14px;padding:16px;background:var(--card);border:0.5px solid var(--border);border-radius:var(--r);cursor:pointer;" ontouchstart="this.style.transform='scale(.98)'" ontouchend="this.style.transform=''">
+          <span style="font-size:28px;">✨</span>
+          <div><p style="font-size:15px;font-weight:600;">Miscellaneous</p><p style="font-size:12px;color:var(--muted);">Any personal task not listed above</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2: Details -->
+    <div id="ps2" style="display:none;">
+      <h2 style="font-size:20px;font-weight:700;margin-bottom:6px;">Describe the task</h2>
+      <p style="font-size:14px;color:var(--muted);margin-bottom:18px;">The clearer you are, the faster a Tasker accepts</p>
+      <div style="margin-bottom:14px;"><label class="lbl">Task title</label><input class="inp" id="task-title" value="Buy groceries from Shoprite Ikeja" placeholder="e.g. Buy groceries from Shoprite"/></div>
+      <div style="margin-bottom:6px;"><label class="lbl">Full description</label>
+        <textarea class="inp" id="task-desc" rows="5" style="resize:none;">Buy the following from Shoprite Ikeja City Mall:
+- 2x Indomie carton (Chicken)
+- 1x Dano Full Cream 800g
+- 4x Hollandia yoghurt
+- Sliced white bread
+Deliver to 14 Adeniyi Jones Ave, Ikeja.</textarea>
+      </div>
+      <p style="font-size:11px;color:var(--hint);text-align:right;margin-bottom:14px;" id="desc-count">0/1000</p>
+    </div>
+
+    <!-- Step 3: Location & time -->
+    <div id="ps3" style="display:none;">
+      <h2 style="font-size:20px;font-weight:700;margin-bottom:6px;">Location & deadline</h2>
+      <p style="font-size:14px;color:var(--muted);margin-bottom:18px;">Where should the Tasker go, and by when?</p>
+      <div style="margin-bottom:14px;"><label class="lbl">📍 Pickup / task location</label><input class="inp" value="Ikeja City Mall, Alausa, Lagos" placeholder="Search address in Lagos..."/></div>
+      <div style="margin-bottom:14px;"><label class="lbl">🚩 Drop-off address (optional)</label><input class="inp" value="14 Adeniyi Jones Ave, Ikeja" placeholder="Client delivery address"/></div>
+      <div style="margin-bottom:6px;"><label class="lbl">🕐 Complete by</label><input class="inp" type="datetime-local" id="deadline-in" style="color:var(--text);"/></div>
+    </div>
+
+    <!-- Step 4: Budget -->
+    <div id="ps4" style="display:none;">
+      <h2 style="font-size:20px;font-weight:700;margin-bottom:6px;">Set your budget</h2>
+      <p style="font-size:14px;color:var(--muted);margin-bottom:18px;">How much are you willing to pay?</p>
+      <div style="margin-bottom:10px;"><label class="lbl">Your budget (₦)</label>
+        <div style="position:relative;"><span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-weight:700;font-size:18px;color:var(--muted);">₦</span><input class="inp" style="padding-left:32px;font-size:22px;font-weight:700;" id="budget-val" value="3500" type="number" inputmode="numeric" oninput="updateBD()"/></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:14px;">
+        <button onclick="setBudget(1000)" style="flex:1;padding:10px;background:var(--bg);border:0.5px solid var(--border);border-radius:var(--rsm);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">₦1k</button>
+        <button onclick="setBudget(2000)" style="flex:1;padding:10px;background:var(--bg);border:0.5px solid var(--border);border-radius:var(--rsm);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">₦2k</button>
+        <button onclick="setBudget(3500)" style="flex:1;padding:10px;background:var(--orange);color:#fff;border:0.5px solid var(--orange);border-radius:var(--rsm);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">₦3.5k</button>
+        <button onclick="setBudget(5000)" style="flex:1;padding:10px;background:var(--bg);border:0.5px solid var(--border);border-radius:var(--rsm);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">₦5k</button>
+      </div>
+      <div class="breakdown" id="breakdown-box">
+        <p style="font-size:11px;font-weight:700;color:var(--hint);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">Payment breakdown</p>
+        <div class="breakdown-row"><span style="color:var(--muted);">Tasker earns (85%)</span><span id="bd-earn" style="color:var(--green);font-weight:700;">₦2,975</span></div>
+        <div class="breakdown-row"><span style="color:var(--muted);">Platform fee (15%)</span><span id="bd-fee" style="color:var(--muted);">₦525</span></div>
+        <div class="breakdown-row"><span>You pay total</span><span id="bd-total" style="color:var(--orange);">₦4,025</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer CTA -->
+  <div style="position:absolute;bottom:0;left:0;right:0;padding:14px 16px;padding-bottom:max(var(--safe-bottom),14px);background:var(--card);border-top:0.5px solid var(--border);">
+    <button class="btn-primary" id="post-next-btn" onclick="nextPostStep()">Continue →</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     SCREEN: TASK TRACKING
+════════════════════════════════════════════════ -->
+<div class="screen" id="s-tracking">
+  <div class="topbar">
+    <button class="back-btn" onclick="go('s-client-home')">←</button>
+    <div style="flex:1;min-width:0;">
+      <div class="topbar-title" style="font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Buy groceries from Shoprite</div>
+      <span class="badge badge-progress">In progress</span>
+    </div>
+  </div>
+
+  <div style="padding:12px 16px;flex-shrink:0;">
+    <div class="tabs">
+      <button class="tab-btn on" id="track-t1" onclick="trackTab(1)">📍 Tracking</button>
+      <button class="tab-btn" id="track-t2" onclick="trackTab(2)">💬 Chat</button>
+    </div>
+  </div>
+
+  <!-- Tracking panel -->
+  <div id="track-panel" class="scroll" style="padding:0 16px 20px;">
+    <!-- Tasker info -->
+    <div class="card" style="margin-bottom:12px;display:flex;align-items:center;gap:12px;">
+      <div style="width:44px;height:44px;border-radius:50%;background:rgba(255,107,26,.15);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:var(--orange);flex-shrink:0;">EO</div>
+      <div style="flex:1;">
+        <p style="font-size:15px;font-weight:600;">Emeka Okonkwo</p>
+        <div style="display:flex;align-items:center;gap:6px;margin-top:3px;">
+          <span style="font-size:10px;background:var(--green-bg);color:var(--green);padding:2px 7px;border-radius:6px;font-weight:700;">✓ Verified</span>
+          <span style="font-size:11px;color:var(--muted);">⭐ 4.8 · 143 tasks</span>
+        </div>
+      </div>
+      <button onclick="trackTab(2)" style="padding:9px 14px;background:var(--orange);color:#fff;border:none;border-radius:var(--rsm);font-size:13px;font-weight:600;cursor:pointer;">Chat</button>
+    </div>
+
+    <!-- Progress -->
+    <div class="card" style="margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <p style="font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;">Progress</p>
+        <span style="font-size:13px;font-weight:700;color:var(--orange);" id="ms-count-lbl">4 / 6 steps</span>
+      </div>
+      <div class="pbar" style="height:7px;margin-bottom:16px;"><div class="pfill" id="ms-prog-bar" style="width:67%"></div></div>
+
+      <div id="milestones-container">
+        <!-- Milestones injected by JS -->
+      </div>
+    </div>
+
+    <!-- Map preview -->
+    <div class="map-block" style="height:150px;margin-bottom:12px;" onclick="go('s-map')">
+      <svg viewBox="0 0 343 150" width="100%" height="150" style="display:block;">
+        <rect width="343" height="150" fill="#e8ead8"/>
+        <rect x="10" y="10" width="60" height="42" rx="3" fill="#d4d8c8"/>
+        <rect x="80" y="10" width="80" height="42" rx="3" fill="#d4d8c8"/>
+        <rect x="170" y="10" width="70" height="42" rx="3" fill="#d4d8c8"/>
+        <rect x="250" y="10" width="80" height="42" rx="3" fill="#d4d8c8"/>
+        <rect x="10" y="65" width="55" height="48" rx="3" fill="#d4d8c8"/>
+        <rect x="75" y="65" width="90" height="48" rx="3" fill="#c8ddb8"/>
+        <rect x="175" y="65" width="65" height="48" rx="3" fill="#d4d8c8"/>
+        <line x1="0" y1="60" x2="343" y2="60" stroke="#fff" stroke-width="6"/>
+        <line x1="68" y1="0" x2="68" y2="150" stroke="#fff" stroke-width="4"/>
+        <line x1="168" y1="0" x2="168" y2="150" stroke="#fff" stroke-width="7"/>
+        <line x1="246" y1="0" x2="246" y2="150" stroke="#fff" stroke-width="4"/>
+        <polyline points="50,130 50,60 168,60 246,60" stroke="#4285F4" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="50" cy="130" r="7" fill="var(--orange)"/><circle cx="50" cy="130" r="3" fill="#fff"/>
+        <ellipse cx="246" cy="57" rx="10" ry="13" fill="#EA4335"/><ellipse cx="246" cy="54" rx="4.5" ry="4.5" fill="#fff"/>
+        <circle cx="168" cy="60" r="8" fill="#4285F4"/><circle cx="168" cy="60" r="4" fill="#fff"/>
+      </svg>
+      <div class="map-overlay"><span>Tap to open map navigation</span></div>
+    </div>
+
+    <!-- Details -->
+    <div class="card" style="margin-bottom:12px;">
+      <div style="display:flex;gap:12px;margin-bottom:10px;"><span style="font-size:18px;">📍</span><div><p style="font-size:11px;font-weight:700;color:var(--hint);text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px;">Pickup</p><p style="font-size:14px;">Ikeja City Mall, Alausa, Lagos</p></div></div>
+      <div style="display:flex;gap:12px;"><span style="font-size:18px;">🕐</span><div><p style="font-size:11px;font-weight:700;color:var(--hint);text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px;">Deadline</p><p style="font-size:14px;">Today, 2:00 PM</p></div></div>
+    </div>
+
+    <button class="btn-primary" id="confirm-complete-btn" style="display:none;margin-bottom:10px;" onclick="confirmComplete()">Confirm task complete ✅</button>
+    <button id="simulate-ms-btn" onclick="advanceMilestone()" style="width:100%;padding:14px;background:var(--bg);color:var(--muted);border:0.5px solid var(--border);border-radius:var(--r);font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">Simulate next milestone →</button>
+  </div>
+
+  <!-- Chat panel -->
+  <div id="chat-panel" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
+    <div id="chat-messages" class="scroll" style="padding:14px 16px;display:flex;flex-direction:column;gap:10px;">
+      <div style="display:flex;flex-direction:column;align-items:flex-start;"><p style="font-size:10px;color:var(--hint);margin-bottom:4px;">Emeka</p><div class="bubble-them">Hi! I'm heading to Shoprite now. Do you need Indomie Chicken or Beef?</div><p class="chat-time">9:20 AM</p></div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;"><div class="bubble-me">Chicken please! Get the 70g sachets</div><p class="chat-time" style="text-align:right;">9:21 AM</p></div>
+      <div style="display:flex;flex-direction:column;align-items:flex-start;"><p style="font-size:10px;color:var(--hint);margin-bottom:4px;">Emeka</p><div class="bubble-them">Got it! I'm at the store now 🛒</div><p class="chat-time">9:41 AM</p></div>
+    </div>
+    <div style="padding:10px 16px;padding-bottom:max(var(--safe-bottom),10px);background:var(--card);border-top:0.5px solid var(--border);display:flex;gap:10px;flex-shrink:0;">
+      <input class="inp" id="chat-msg-in" style="flex:1;padding:11px 14px;" placeholder="Type a message..." onkeydown="if(event.key==='Enter')sendMsg()"/>
+      <button onclick="sendMsg()" style="width:44px;height:44px;background:var(--orange);border:none;border-radius:var(--rsm);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <svg style="width:18px;height:18px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     SCREEN: CHAT STANDALONE
+════════════════════════════════════════════════ -->
+<div class="screen" id="s-chat">
+  <div class="topbar">
+    <button class="back-btn" onclick="go('s-client-home')">←</button>
+    <div style="width:38px;height:38px;border-radius:50%;background:rgba(255,107,26,.15);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--orange);flex-shrink:0;">EO</div>
+    <div style="flex:1;"><div class="topbar-title" style="font-size:15px;">Emeka Okonkwo</div><p style="font-size:11px;color:var(--green);">Online · Grocery task</p></div>
+  </div>
+  <div id="standalone-msgs" class="scroll" style="padding:14px 16px;display:flex;flex-direction:column;gap:10px;flex:1;">
+    <div style="display:flex;flex-direction:column;align-items:flex-start;"><p style="font-size:10px;color:var(--hint);margin-bottom:4px;">Emeka</p><div class="bubble-them">Hi! I'm at the store. Do you need anything else added?</div><p class="chat-time">9:41 AM</p></div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;"><div class="bubble-me">Please add a pack of Golden Morn if they have it!</div><p class="chat-time" style="text-align:right;">9:43 AM</p></div>
+    <div style="display:flex;flex-direction:column;align-items:flex-start;"><p style="font-size:10px;color:var(--hint);margin-bottom:4px;">Emeka</p><div class="bubble-them">Found it! Total came to ₦3,420 — within your budget 👍</div><p class="chat-time">9:44 AM</p></div>
+  </div>
+  <div style="padding:10px 16px;padding-bottom:max(var(--safe-bottom),10px);background:var(--card);border-top:0.5px solid var(--border);display:flex;gap:10px;flex-shrink:0;">
+    <input class="inp" id="standalone-msg-in" style="flex:1;padding:11px 14px;" placeholder="Type a message..." onkeydown="if(event.key==='Enter')sendStandaloneMsg()"/>
+    <button onclick="sendStandaloneMsg()" style="width:44px;height:44px;background:var(--orange);border:none;border-radius:var(--rsm);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+      <svg style="width:18px;height:18px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     SCREEN: TASKER FEED
+════════════════════════════════════════════════ -->
+<div class="screen" id="s-tasker-feed">
+  <div class="topbar" style="justify-content:space-between;">
+    <div>
+      <div style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);margin-bottom:2px;">
+        <svg style="width:12px;height:12px;fill:none;stroke:var(--orange);stroke-width:2;" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        Near Ikeja, Lagos
+      </div>
+      <div class="topbar-title">Available tasks <span style="font-size:14px;font-weight:400;color:var(--muted);">(12)</span></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px;background:var(--green-bg);padding:6px 12px;border-radius:20px;cursor:pointer;">
+      <div style="width:7px;height:7px;background:var(--green);border-radius:50%;"></div>
+      <span style="font-size:12px;font-weight:700;color:var(--green);">Online</span>
+    </div>
+  </div>
+  <div style="padding:10px 16px 8px;background:var(--card);border-bottom:0.5px solid var(--border);flex-shrink:0;">
+    <div class="pills">
+      <div class="pill on">🔥 All</div>
+      <div class="pill">🛒 Grocery</div>
+      <div class="pill">📦 Delivery</div>
+      <div class="pill">🍱 Food</div>
+      <div class="pill">💡 Bills</div>
+      <div class="pill">🏦 Queue</div>
+    </div>
+  </div>
+
+  <div class="scroll" style="padding:14px 16px 16px;">
+    <div class="task-row" onclick="go('s-tasker-task')">
+      <div class="cat-icon">🛒</div>
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:4px;"><p style="font-size:14px;font-weight:600;flex:1;min-width:0;">Buy groceries from Shoprite Ikeja</p><span class="earn-tag">₦2,975</span></div>
+        <span style="font-size:10px;font-weight:700;background:var(--bg);color:var(--muted);padding:2px 8px;border-radius:8px;display:inline-block;margin-bottom:5px;">Grocery</span>
+        <p style="font-size:12px;color:var(--muted);">📍 Ikeja City Mall · 2.1km</p>
+        <p style="font-size:12px;color:var(--muted);margin-top:2px;">🕐 Due 2:00 PM today</p>
+      </div>
+    </div>
+
+    <div class="task-row" style="border-left:3px solid #F59E0B;" onclick="go('s-tasker-task')">
+      <div class="cat-icon">💡</div>
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:4px;"><p style="font-size:14px;font-weight:600;flex:1;min-width:0;">Pay NEPA token — prepaid meter top-up</p><span class="earn-tag">₦850</span></div>
+        <span style="font-size:10px;font-weight:700;background:var(--bg);color:var(--muted);padding:2px 8px;border-radius:8px;display:inline-block;margin-bottom:5px;">Bills</span>
+        <p style="font-size:12px;color:var(--muted);">📍 Ikeja Bus Stop · 0.8km</p>
+        <p style="font-size:12px;color:#D97706;font-weight:600;margin-top:2px;">⚡ Due soon — 45 mins</p>
+      </div>
+    </div>
+
+    <div class="task-row" onclick="go('s-tasker-task')">
+      <div class="cat-icon">🍱</div>
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:4px;"><p style="font-size:14px;font-weight:600;flex:1;min-width:0;">Pick up jollof rice from Chicken Republic GRA</p><span class="earn-tag">₦1,275</span></div>
+        <span style="font-size:10px;font-weight:700;background:var(--bg);color:var(--muted);padding:2px 8px;border-radius:8px;display:inline-block;margin-bottom:5px;">Food</span>
+        <p style="font-size:12px;color:var(--muted);">📍 GRA Ikeja · 3.4km</p>
+        <p style="font-size:12px;color:var(--muted);margin-top:2px;">🕐 Due 1:30 PM today</p>
+      </div>
+    </div>
+
+    <div class="task-row" onclick="go('s-tasker-task')">
+      <div class="cat-icon">📦</div>
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:4px;"><p style="font-size:14px;font-weight:600;flex:1;min-width:0;">Deliver parcel from Maryland to Victoria Island</p><span class="earn-tag">₦4,250</span></div>
+        <span style="font-size:10px;font-weight:700;background:var(--bg);color:var(--muted);padding:2px 8px;border-radius:8px;display:inline-block;margin-bottom:5px;">Delivery</span>
+        <p style="font-size:12px;color:var(--muted);">📍 Maryland · 5.1km</p>
+        <p style="font-size:12px;color:var(--muted);margin-top:2px;">🕐 Due 4:00 PM today</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bnav">
+    <button class="ntab on"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg><span>Feed</span></button>
+    <button class="ntab" onclick="go('s-tasker-task')"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg><span>Active</span></button>
+    <button class="ntab" onclick="go('s-tasker-earnings')"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span>Earnings</span></button>
+    <button class="ntab"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Profile</span></button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     SCREEN: TASKER ACTIVE TASK
+════════════════════════════════════════════════ -->
+<div class="screen" id="s-tasker-task">
+  <div class="topbar">
+    <button class="back-btn" onclick="go('s-tasker-feed')">←</button>
+    <div style="flex:1;min-width:0;">
+      <div class="topbar-title" style="font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Buy groceries from Shoprite</div>
+      <p style="font-size:11px;color:var(--muted);">Grocery · ₦3,500 budget</p>
+    </div>
+  </div>
+  <div class="scroll" style="padding:16px 16px 20px;">
+    <div class="card-dark" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      <div><p style="color:rgba(255,255,255,.5);font-size:12px;margin-bottom:4px;">You earn</p><p style="color:#fff;font-size:30px;font-weight:700;">₦2,975</p></div>
+      <div style="text-align:right;"><p style="color:rgba(255,255,255,.5);font-size:12px;">Budget</p><p style="color:#fff;font-size:15px;font-weight:600;">₦3,500</p><p style="color:rgba(255,255,255,.35);font-size:11px;">15% fee</p></div>
+    </div>
+
+    <!-- Map CTA -->
+    <button onclick="go('s-map')" style="width:100%;padding:14px 16px;background:var(--blue);color:#fff;border:none;border-radius:var(--r);font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:14px;font-family:inherit;">
+      <svg style="width:20px;height:20px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      Open navigation — Shoprite Ikeja (2.1 km)
+    </button>
+
+    <div class="card" style="margin-bottom:12px;">
+      <p style="font-size:11px;font-weight:700;color:var(--hint);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">Task description</p>
+      <p style="font-size:14px;line-height:1.6;color:var(--text);">Buy the following from Shoprite Ikeja City Mall: 2x Indomie carton (Chicken), 1x Dano Full Cream 800g, 4x Hollandia yoghurt, sliced white bread. Deliver to 14 Adeniyi Jones Ave, Ikeja.</p>
+    </div>
+
+    <div class="card" style="margin-bottom:14px;">
+      <p style="font-size:11px;font-weight:700;color:var(--hint);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;">Current milestone</p>
+      <p style="font-size:14px;font-weight:600;margin-bottom:12px;">Step <span id="tk-step-num">3</span> of 6: <span style="color:var(--orange);" id="tk-step-label">Shopping in progress</span></p>
+      <div id="tk-photo-area" onclick="simulatePhoto()" style="border:1.5px dashed var(--border);border-radius:var(--rsm);padding:20px;text-align:center;cursor:pointer;margin-bottom:12px;">
+        <div style="font-size:24px;margin-bottom:6px;">📷</div>
+        <p style="font-size:13px;color:var(--muted);">Add photo proof (optional)</p>
+      </div>
+      <button class="btn-primary" id="tk-ms-btn" onclick="taskerAdvance()">Mark step done ✓</button>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;gap:12px;margin-bottom:10px;"><span style="font-size:18px;">📍</span><div><p style="font-size:11px;font-weight:700;color:var(--hint);margin-bottom:2px;">PICKUP LOCATION</p><p style="font-size:14px;">Shoprite Ikeja City Mall, Alausa</p></div></div>
+      <div style="display:flex;gap:12px;"><span style="font-size:18px;">🚩</span><div><p style="font-size:11px;font-weight:700;color:var(--hint);margin-bottom:2px;">DROP-OFF</p><p style="font-size:14px;">14 Adeniyi Jones Ave, Ikeja</p></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     SCREEN: MAP NAVIGATION
+════════════════════════════════════════════════ -->
+<div class="screen" id="s-map">
+  <!-- Top bar over map -->
+  <div style="background:var(--card);padding:max(var(--safe-top),12px) 16px 12px;display:flex;align-items:center;gap:10px;border-bottom:0.5px solid var(--border);flex-shrink:0;z-index:10;">
+    <button class="back-btn" onclick="go('s-tasker-task')">←</button>
+    <div style="flex:1;background:var(--bg);border-radius:20px;padding:9px 16px;">
+      <p style="font-size:13px;font-weight:600;" id="map-dest-lbl">To: Shoprite Ikeja City Mall</p>
+      <p style="font-size:11px;color:var(--muted);">4.2 km · ~18 min</p>
+    </div>
+  </div>
+
+  <!-- Nav instruction banner -->
+  <div class="nav-instruction" style="margin:10px 16px 0;flex-shrink:0;">
+    <div class="turn-box">
+      <svg id="turn-svg" style="width:20px;height:20px;fill:none;stroke:#fff;stroke-width:2.5;stroke-linecap:round;" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+    </div>
+    <div style="flex:1;">
+      <p style="color:#fff;font-size:14px;font-weight:600;" id="nav-text">Head north on Awolowo Way</p>
+      <p style="color:rgba(255,255,255,.65);font-size:12px;" id="nav-sub">Continue 400 m</p>
+    </div>
+    <div style="text-align:right;">
+      <p style="color:#fff;font-size:16px;font-weight:700;" id="nav-eta">18 min</p>
+      <p style="color:rgba(255,255,255,.6);font-size:10px;">ETA 10:00</p>
+    </div>
+  </div>
+
+  <!-- Map SVG -->
+  <div style="flex:1;position:relative;margin:10px 16px 0;border-radius:var(--r);overflow:hidden;">
+    <svg id="map-svg" viewBox="0 0 343 340" width="100%" height="100%" style="display:block;background:#e8ead8;">
+      <rect width="343" height="340" fill="#e8ead8"/>
+      <!-- Blocks -->
+      <rect x="10" y="10" width="55" height="50" rx="3" fill="#d4d8c8"/>
+      <rect x="75" y="10" width="80" height="50" rx="3" fill="#d4d8c8"/>
+      <rect x="165" y="10" width="75" height="50" rx="3" fill="#d4d8c8"/>
+      <rect x="250" y="10" width="83" height="50" rx="3" fill="#d4d8c8"/>
+      <rect x="10" y="73" width="55" height="80" rx="3" fill="#d4d8c8"/>
+      <rect x="75" y="73" width="80" height="80" rx="3" fill="#d4d8c8"/>
+      <rect x="165" y="73" width="75" height="80" rx="3" fill="#c8ddb8"/>
+      <rect x="250" y="73" width="83" height="80" rx="3" fill="#d4d8c8"/>
+      <rect x="10" y="165" width="55" height="75" rx="3" fill="#d4d8c8"/>
+      <rect x="75" y="165" width="80" height="75" rx="3" fill="#d4d8c8"/>
+      <rect x="165" y="165" width="75" height="75" rx="3" fill="#d4d8c8"/>
+      <rect x="250" y="165" width="83" height="75" rx="3" fill="#d4d8c8"/>
+      <rect x="10" y="255" width="55" height="75" rx="3" fill="#d4d8c8"/>
+      <rect x="75" y="255" width="80" height="75" rx="3" fill="#c8ddb8"/>
+      <rect x="165" y="255" width="75" height="75" rx="3" fill="#d4d8c8"/>
+      <rect x="250" y="255" width="83" height="75" rx="3" fill="#d4d8c8"/>
+      <!-- Major roads -->
+      <line x1="0" y1="67" x2="343" y2="67" stroke="#fff" stroke-width="8"/>
+      <line x1="0" y1="158" x2="343" y2="158" stroke="#fff" stroke-width="8"/>
+      <line x1="0" y1="248" x2="343" y2="248" stroke="#fff" stroke-width="6"/>
+      <line x1="67" y1="0" x2="67" y2="340" stroke="#fff" stroke-width="6"/>
+      <line x1="157" y1="0" x2="157" y2="340" stroke="#fff" stroke-width="8"/>
+      <line x1="247" y1="0" x2="247" y2="340" stroke="#fff" stroke-width="6"/>
+      <!-- Road labels -->
+      <text x="12" y="63" style="font-size:8px;fill:#999;">Awolowo Way</text>
+      <text x="12" y="154" style="font-size:8px;fill:#999;">Mobolaji B. Anthony Way</text>
+      <text x="170" y="63" style="font-size:8px;fill:#999;">Adeniyi Jones Ave</text>
+      <!-- Traffic slow zone -->
+      <line x1="157" y1="158" x2="247" y2="158" stroke="#F5A623" stroke-width="8" stroke-linecap="round" opacity=".7"/>
+      <!-- Route: current pos → shoprite -->
+      <polyline id="r-active" points="37,310 37,248 37,158 157,158 247,158 247,67" stroke="#4285F4" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      <!-- Route: shoprite → dropoff (dashed) -->
+      <polyline id="r-remain" points="247,67 247,158 157,158 157,248" stroke="#4285F4" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="8 5" opacity=".5"/>
+      <!-- Tasker marker -->
+      <g id="tm">
+        <circle cx="37" cy="310" r="16" fill="#4285F4" fill-opacity=".15"/>
+        <circle cx="37" cy="310" r="11" fill="#4285F4"/>
+        <circle cx="37" cy="310" r="6" fill="#fff"/>
+      </g>
+      <!-- Pickup marker (Shoprite) -->
+      <ellipse cx="247" cy="63" rx="13" ry="17" fill="var(--orange)"/>
+      <ellipse cx="247" cy="59" rx="5.5" ry="5.5" fill="#fff"/>
+      <polygon points="247,80 241,67 253,67" fill="var(--orange)"/>
+      <rect x="256" y="44" width="72" height="20" rx="5" fill="var(--orange)" fill-opacity=".9"/>
+      <text x="292" y="58" text-anchor="middle" style="font-size:9px;fill:#fff;font-weight:700;">Shoprite Ikeja</text>
+      <!-- Dropoff marker -->
+      <ellipse cx="157" cy="244" rx="11" ry="15" fill="#EA4335"/>
+      <ellipse cx="157" cy="240" rx="5" ry="5" fill="#fff"/>
+      <polygon points="157,259 151,246 163,246" fill="#EA4335"/>
+      <rect x="92" y="262" width="84" height="20" rx="5" fill="#EA4335" fill-opacity=".9"/>
+      <text x="134" y="276" text-anchor="middle" style="font-size:9px;fill:#fff;font-weight:700;">14 Adeniyi Jones</text>
+    </svg>
+  </div>
+
+  <!-- Bottom sheet -->
+  <div style="background:var(--card);border-radius:20px 20px 0 0;padding:14px 16px;flex-shrink:0;margin-top:10px;border-top:0.5px solid var(--border);">
+    <div style="width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 14px;"></div>
+
+    <!-- Progress bar -->
+    <div style="height:4px;background:var(--bg);border-radius:2px;overflow:hidden;margin-bottom:12px;"><div class="pfill" id="nav-prog" style="width:30%;"></div></div>
+
+    <!-- ETA strip -->
+    <div class="eta-strip" style="margin-bottom:12px;">
+      <div class="eta-seg"><div class="eta-val" id="n-dist">2.7 km</div><div class="eta-lbl">Distance</div></div>
+      <div class="eta-seg"><div class="eta-val" id="n-time" style="color:var(--orange);">11 min</div><div class="eta-lbl">ETA</div></div>
+      <div class="eta-seg"><div class="eta-val" id="n-traffic" style="color:#D97706;">Moderate</div><div class="eta-lbl">Traffic</div></div>
+    </div>
+
+    <!-- Stops -->
+    <div style="display:flex;gap:10px;margin-bottom:12px;">
+      <div class="stop-pill active-stop" id="sp1" onclick="setStop(1)">
+        <p style="font-size:10px;font-weight:700;color:var(--orange);margin-bottom:2px;">STOP 1</p>
+        <p style="font-size:13px;font-weight:600;">Shoprite Ikeja</p>
+        <p style="font-size:11px;color:var(--muted);">2.1 km · 11 min</p>
+      </div>
+      <div class="stop-pill done-stop" id="sp2" onclick="setStop(2)">
+        <p style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:2px;">STOP 2</p>
+        <p style="font-size:13px;font-weight:600;">14 Adeniyi Jones</p>
+        <p style="font-size:11px;color:var(--muted);">2.1 km after stop 1</p>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;">
+      <button onclick="simulateDrive()" id="drive-btn" style="flex:1;padding:13px;background:var(--orange);color:#fff;border:none;border-radius:var(--rsm);font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">Simulate drive →</button>
+      <button onclick="openGMaps('Shoprite Ikeja City Mall Lagos Nigeria')" style="padding:13px 14px;background:var(--blue-bg);color:var(--blue);border:0.5px solid #B5D4F4;border-radius:var(--rsm);font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:inherit;display:flex;align-items:center;gap:6px;">
+        <svg style="width:14px;height:14px;" viewBox="0 0 24 24" fill="none"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="#EA4335"/><circle cx="12" cy="9" r="2.5" fill="#fff"/></svg>
+        Google Maps
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     SCREEN: TASKER EARNINGS
+════════════════════════════════════════════════ -->
+<div class="screen" id="s-tasker-earnings">
+  <div class="topbar"><div class="topbar-title">Earnings</div></div>
+  <div class="scroll" style="padding:16px 16px 16px;">
+    <div class="wallet-card" style="margin-bottom:14px;">
+      <svg style="width:28px;height:28px;fill:none;stroke:var(--orange);stroke-width:1.75;stroke-linecap:round;" viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="2"/></svg>
+      <p class="wallet-lbl" style="margin-top:8px;">Available balance</p>
+      <p class="wallet-bal" id="earn-bal">₦14,750.00</p>
+      <button onclick="doWithdraw()" style="margin-top:14px;padding:11px 28px;background:var(--orange);color:#fff;border:none;border-radius:var(--rsm);font-size:14px;font-weight:600;cursor:pointer;" id="wd-btn">Withdraw to GTBank</button>
+    </div>
+
+    <div class="stat-grid" style="margin-bottom:14px;">
+      <div class="stat-card"><p class="stat-num" style="color:var(--green);">₦52,400</p><p class="stat-lbl">Total earned</p></div>
+      <div class="stat-card"><p class="stat-num" style="color:var(--blue);">₦37,650</p><p class="stat-lbl">Withdrawn</p></div>
+      <div class="stat-card"><p class="stat-num">38</p><p class="stat-lbl">Tasks done</p></div>
+      <div class="stat-card"><p class="stat-num">4.8 ⭐</p><p class="stat-lbl">Rating</p></div>
+    </div>
+
+    <div class="card" style="margin-bottom:14px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <p style="font-size:14px;font-weight:600;">Payout account</p>
+        <span style="font-size:13px;color:var(--orange);font-weight:600;cursor:pointer;">Change</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;background:var(--bg);border-radius:var(--rsm);padding:12px;">
+        <span style="font-size:24px;">🏦</span>
+        <div><p style="font-size:14px;font-weight:600;">GTBank</p><p style="font-size:12px;color:var(--muted);">****7821</p></div>
+      </div>
+    </div>
+
+    <p class="section-label">Recent earnings</p>
+    <div style="display:flex;flex-direction:column;gap:8px;padding-bottom:20px;">
+      <div class="card" style="display:flex;align-items:center;gap:12px;"><div class="cat-icon" style="width:40px;height:40px;font-size:18px;">🛒</div><div style="flex:1;"><p style="font-size:14px;font-weight:600;">Grocery run – Shoprite VI</p><p style="font-size:12px;color:var(--muted);">Today · Completed</p></div><p style="font-size:15px;font-weight:700;color:var(--green);">+₦2,975</p></div>
+      <div class="card" style="display:flex;align-items:center;gap:12px;"><div class="cat-icon" style="width:40px;height:40px;font-size:18px;">📦</div><div style="flex:1;"><p style="font-size:14px;font-weight:600;">Package delivery – Lekki</p><p style="font-size:12px;color:var(--muted);">Yesterday · Completed</p></div><p style="font-size:15px;font-weight:700;color:var(--green);">+₦3,825</p></div>
+      <div class="card" style="display:flex;align-items:center;gap:12px;"><div class="cat-icon" style="width:40px;height:40px;font-size:18px;">🏦</div><div style="flex:1;"><p style="font-size:14px;font-weight:600;">Bank queue – First Bank HQ</p><p style="font-size:12px;color:var(--muted);">2 days ago · Completed</p></div><p style="font-size:15px;font-weight:700;color:var(--green);">+₦1,700</p></div>
+    </div>
+  </div>
+
+  <div class="bnav">
+    <button class="ntab" onclick="go('s-tasker-feed')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg><span>Feed</span></button>
+    <button class="ntab" onclick="go('s-tasker-task')"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg><span>Active</span></button>
+    <button class="ntab on"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span>Earnings</span></button>
+    <button class="ntab"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Profile</span></button>
+  </div>
+</div>
+
+</div><!-- end #app -->
+
+<script>
+// ── APP STATE ────────────────────────────────
+let role = 'client';
+let postStep = 1;
+let msStep = 4; // already at 4/6 milestones
+let tkStep = 3;
+let navStep = 0;
+let navInterval = null;
+let checked = 0;
+
+const msData = [
+  {label:'Task accepted by Tasker', done:true},
+  {label:'En route to the store', done:true},
+  {label:'Arrived at Shoprite Ikeja', done:true},
+  {label:'Shopping in progress', done:true},
+  {label:'En route to delivery address', done:false, active:true},
+  {label:'Items delivered — awaiting your confirmation', done:false},
+];
+
+const navSteps = [
+  {text:'Head north on Awolowo Way', sub:'Continue 400 m', eta:'18 min', dist:'4.2 km', time:'18 min', prog:15},
+  {text:'Turn left onto Mobolaji Bank Anthony Way', sub:'In 200 m, turn left', eta:'14 min', dist:'3.1 km', time:'14 min', prog:30, left:true},
+  {text:'Continue on Mobolaji Bank Anthony Way', sub:'Continue 1.2 km', eta:'11 min', dist:'2.4 km', time:'11 min', prog:48},
+  {text:'Turn right at Alausa interchange', sub:'In 300 m, turn right', eta:'8 min', dist:'1.6 km', time:'8 min', prog:65, right:true},
+  {text:'Arrived at Shoprite Ikeja City Mall', sub:'Destination on the right', eta:'Arrived', dist:'0 km', time:'Arrived', prog:100},
+];
+
+// ── SCREEN NAVIGATION ─────────────────────────
+function go(id) {
+  const cur = document.querySelector('.screen.active');
+  const next = document.getElementById(id);
+  if (!next || cur === next) return;
+  cur.classList.remove('active');
+  next.classList.add('active', 'slide-in');
+  setTimeout(() => next.classList.remove('slide-in'), 300);
+  next.querySelectorAll('.scroll').forEach(el => el.scrollTop = 0);
+}
+
+// ── LOGIN / OTP ───────────────────────────────
+function pickRole(r) {
+  role = r;
+  document.getElementById('role-client').classList.toggle('selected', r === 'client');
+  document.getElementById('role-tasker').classList.toggle('selected', r === 'tasker');
+}
+
+function goOTP() {
+  const p = document.getElementById('phone-in').value || '0801234567';
+  document.getElementById('otp-num-display').textContent = '+234 ' + p.slice(0,4) + ' ***';
+  go('s-otp');
+  setTimeout(() => document.getElementById('o0').focus(), 300);
+}
+
+function otpIn(i, el) {
+  if (el.value && i < 5) document.getElementById('o'+(i+1)).focus();
+  const all = [0,1,2,3,4,5].map(n => document.getElementById('o'+n).value);
+  document.getElementById('otp-btn').disabled = !all.every(v => v.trim());
+}
+
+function verifyOTP() {
+  if (role === 'tasker') go('s-tasker-feed');
+  else go('s-client-home');
+}
+
+// ── POST TASK ─────────────────────────────────
+let selectedCat = 'grocery';
+function pickCat(c) { selectedCat = c; }
+
+function nextPostStep() {
+  if (postStep === 1) {
+    postStep = 2;
+    document.getElementById('ps1').style.display = 'none';
+    document.getElementById('ps2').style.display = '';
+    document.getElementById('post-step-lbl').textContent = '2';
+    document.getElementById('post-progress').style.width = '50%';
+    document.getElementById('post-next-btn').textContent = 'Continue →';
+  } else if (postStep === 2) {
+    postStep = 3;
+    document.getElementById('ps2').style.display = 'none';
+    document.getElementById('ps3').style.display = '';
+    // Set default deadline to today + 3h
+    const d = new Date(Date.now() + 3*3600000);
+    const str = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+'T'+String(d.getHours()).padStart(2,'0')+':00';
+    document.getElementById('deadline-in').value = str;
+    document.getElementById('post-step-lbl').textContent = '3';
+    document.getElementById('post-progress').style.width = '75%';
+  } else if (postStep === 3) {
+    postStep = 4;
+    document.getElementById('ps3').style.display = 'none';
+    document.getElementById('ps4').style.display = '';
+    document.getElementById('post-step-lbl').textContent = '4';
+    document.getElementById('post-progress').style.width = '100%';
+    document.getElementById('post-next-btn').textContent = 'Post task 🚀';
+  } else {
+    go('s-tracking');
+    postStep = 1;
+    document.getElementById('ps4').style.display = 'none';
+    document.getElementById('ps1').style.display = '';
+    document.getElementById('post-step-lbl').textContent = '1';
+    document.getElementById('post-progress').style.width = '25%';
+    document.getElementById('post-next-btn').textContent = 'Continue →';
+  }
+}
+
+function setBudget(v) {
+  document.getElementById('budget-val').value = v;
+  updateBD();
+}
+
+function updateBD() {
+  const b = parseFloat(document.getElementById('budget-val').value) || 0;
+  document.getElementById('bd-earn').textContent = '₦' + Math.round(b*.85).toLocaleString();
+  document.getElementById('bd-fee').textContent = '₦' + Math.round(b*.15).toLocaleString();
+  document.getElementById('bd-total').textContent = '₦' + Math.round(b*1.15).toLocaleString();
+}
+
+// ── MILESTONES (CLIENT TRACKING) ──────────────
+function renderMilestones() {
+  const c = document.getElementById('milestones-container');
+  let html = '';
+  msData.forEach((m, i) => {
+    const dotClass = m.done ? 'done' : (m.active ? 'active' : 'pending');
+    const dotContent = m.done ? '✓' : (i+1);
+    const lineClass = m.done ? 'done' : 'pending';
+    const textStyle = m.done ? 'text-decoration:line-through;color:var(--hint);' : (m.active ? 'color:var(--orange);font-weight:600;' : 'color:var(--hint);');
+    html += `<div class="ms-row" style="padding-bottom:${i<msData.length-1?'4px':'0'};">
+      <div style="display:flex;flex-direction:column;align-items:center;">
+        <div class="ms-dot ${dotClass}">${dotContent}</div>
+        ${i<msData.length-1 ? `<div class="ms-line ${lineClass}"></div>` : ''}
+      </div>
+      <div style="padding-top:4px;padding-bottom:${i<msData.length-1?'8px':'0'};">
+        <p style="font-size:14px;${textStyle}">${m.label}</p>
+        ${m.done ? '<p style="font-size:11px;color:var(--hint);margin-top:2px;">'+(9+i)+':15 AM</p>' : ''}
+      </div>
+    </div>`;
+  });
+  c.innerHTML = html;
+}
+
+function advanceMilestone() {
+  if (msStep >= 6) return;
+  // Mark current active as done
+  const prev = msData.findIndex(m => m.active);
+  if (prev > -1) { msData[prev].done = true; msData[prev].active = false; }
+  // Set next active
+  if (msStep < 5) { msData[msStep].active = true; }
+  msStep++;
+  const pct = Math.round((msStep/6)*100);
+  document.getElementById('ms-prog-bar').style.width = pct+'%';
+  document.getElementById('ms-count-lbl').textContent = msStep+' / 6 steps';
+  renderMilestones();
+  if (msStep === 6) {
+    document.getElementById('simulate-ms-btn').style.display = 'none';
+    document.getElementById('confirm-complete-btn').style.display = 'block';
+  }
+}
+
+function confirmComplete() {
+  document.getElementById('confirm-complete-btn').style.display = 'none';
+  const done = document.createElement('div');
+  done.className = 'info-box info-green';
+  done.style.cssText = 'margin-top:12px;text-align:center;padding:18px;';
+  done.innerHTML = '<p style="font-size:26px;margin-bottom:8px;">🎉</p><p style="font-size:16px;font-weight:700;">Task complete!</p><p style="font-size:13px;margin-top:4px;">Payment released to Emeka. Please rate your Tasker.</p>';
+  document.getElementById('milestones-container').insertAdjacentElement('afterend', done);
+}
+
+// ── TRACKING TABS ─────────────────────────────
+function trackTab(n) {
+  document.getElementById('track-t1').classList.toggle('on', n===1);
+  document.getElementById('track-t2').classList.toggle('on', n===2);
+  document.getElementById('track-panel').style.display = n===1 ? '' : 'none';
+  document.getElementById('chat-panel').style.display = n===2 ? 'flex' : 'none';
+}
+
+// ── CHAT ──────────────────────────────────────
+const replies = ['Got it!','No problem, on my way.','Sure thing!','Understood, will update you.','Done! Almost there.'];
+function sendMsg() {
+  const inp = document.getElementById('chat-msg-in');
+  if (!inp.value.trim()) return;
+  appendMsg('chat-messages', inp.value.trim(), true);
+  inp.value = '';
+  setTimeout(() => appendMsg('chat-messages', replies[Math.floor(Math.random()*replies.length)], false, 'Emeka'), 900);
+}
+function sendStandaloneMsg() {
+  const inp = document.getElementById('standalone-msg-in');
+  if (!inp.value.trim()) return;
+  appendMsg('standalone-msgs', inp.value.trim(), true);
+  inp.value = '';
+  setTimeout(() => appendMsg('standalone-msgs', replies[Math.floor(Math.random()*replies.length)], false, 'Emeka'), 900);
+}
+function appendMsg(containerId, text, isMe, sender) {
+  const c = document.getElementById(containerId);
+  const now = new Date(); const t = now.getHours()+':'+String(now.getMinutes()).padStart(2,'0');
+  const div = document.createElement('div');
+  div.style.cssText = 'display:flex;flex-direction:column;align-items:'+(isMe?'flex-end':'flex-start')+';';
+  div.innerHTML = (!isMe&&sender?`<p style="font-size:10px;color:var(--hint);margin-bottom:4px;">${sender}</p>`:'')
+    +`<div class="${isMe?'bubble-me':'bubble-them'}">${text}</div>`
+    +`<p class="chat-time" style="${isMe?'text-align:right;':''}">${t}</p>`;
+  c.appendChild(div);
+  c.scrollTop = c.scrollHeight;
+}
+
+// ── TASKER MILESTONE ADVANCE ──────────────────
+const tkLabels = ['Shopping in progress','En route to delivery address','Items delivered — awaiting confirmation','Task complete! 🎉'];
+function taskerAdvance() {
+  tkStep++;
+  if (tkStep > 5) {
+    document.getElementById('tk-ms-btn').textContent = 'Waiting for client confirmation...';
+    document.getElementById('tk-ms-btn').disabled = true;
+    document.getElementById('tk-ms-btn').style.opacity = '.4';
+    document.getElementById('tk-step-label').textContent = 'All milestones complete!';
+    document.getElementById('tk-photo-area').style.display = 'none';
+    return;
+  }
+  document.getElementById('tk-step-num').textContent = tkStep;
+  document.getElementById('tk-step-label').textContent = tkLabels[tkStep-3] || 'Done';
+}
+
+function simulatePhoto() {
+  const a = document.getElementById('tk-photo-area');
+  a.innerHTML = '<p style="font-size:14px;color:var(--green);font-weight:700;">Photo attached ✓</p><p style="font-size:11px;color:var(--hint);margin-top:3px;">proof_photo.jpg</p>';
+  a.style.background = 'var(--green-bg)'; a.style.borderColor = '#B8E8CC';
+}
+
+// ── MAP NAVIGATION ────────────────────────────
+function setStop(n) {
+  const s1 = document.getElementById('sp1'), s2 = document.getElementById('sp2');
+  if (n===1) { s1.className='stop-pill active-stop'; s2.className='stop-pill done-stop'; document.getElementById('map-dest-lbl').textContent='To: Shoprite Ikeja City Mall'; }
+  else { s2.className='stop-pill active-stop'; s1.className='stop-pill done-stop'; document.getElementById('map-dest-lbl').textContent='To: 14 Adeniyi Jones Ave, Ikeja'; }
+}
+
+function simulateDrive() {
+  const btn = document.getElementById('drive-btn');
+  if (navInterval) { clearInterval(navInterval); navInterval=null; btn.textContent='Simulate drive →'; navStep=0; return; }
+  btn.textContent = 'Driving... (tap to stop)';
+  navStep = 0;
+  navInterval = setInterval(() => {
+    if (navStep >= navSteps.length-1) {
+      clearInterval(navInterval); navInterval=null;
+      btn.textContent='Simulate drive →';
+      // Show arrived
+      document.getElementById('nav-text').textContent = '✅ Arrived at Shoprite Ikeja City Mall';
+      document.getElementById('nav-sub').textContent = 'Collect items and proceed';
+      setTimeout(() => { navStep=0; }, 2000);
+      return;
+    }
+    navStep++;
+    const s = navSteps[navStep];
+    document.getElementById('nav-text').textContent = s.text;
+    document.getElementById('nav-sub').textContent = s.sub;
+    document.getElementById('nav-eta').textContent = s.eta;
+    document.getElementById('n-dist').textContent = s.dist;
+    document.getElementById('n-time').textContent = s.time;
+    document.getElementById('nav-prog').style.width = s.prog+'%';
+    const svg = document.getElementById('turn-svg');
+    if (s.left) svg.innerHTML='<polyline points="15 18 9 12 15 6"/><line x1="9" y1="12" x2="20" y2="12"/>';
+    else if (s.right) svg.innerHTML='<polyline points="9 18 15 12 9 6"/><line x1="15" y1="12" x2="4" y2="12"/>';
+    else svg.innerHTML='<line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>';
+  }, 1500);
+}
+
+function openGMaps(q) {
+  window.open('https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(q), '_blank');
+}
+
+// ── EARNINGS WITHDRAW ─────────────────────────
+function doWithdraw() {
+  const btn = document.getElementById('wd-btn');
+  btn.textContent = '✓ Withdrawal initiated';
+  btn.style.background = 'var(--green)';
+  btn.disabled = true;
+  setTimeout(() => {
+    document.getElementById('earn-bal').textContent = '₦0.00';
+    setTimeout(() => {
+      document.getElementById('earn-bal').textContent = '₦14,750.00';
+      btn.textContent = 'Withdraw to GTBank';
+      btn.style.background = 'var(--orange)';
+      btn.disabled = false;
+    }, 2000);
+  }, 600);
+}
+
+// ── INIT ─────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  renderMilestones();
+  updateBD();
+  // Prevent rubber band scroll on iOS
+  document.addEventListener('touchmove', e => { if (!e.target.closest('.scroll')) e.preventDefault(); }, {passive:false});
+});
+</script>
+</body>
+</html>
