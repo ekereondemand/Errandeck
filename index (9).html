@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+<meta name="theme-color" content="#FF5500"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<title>Errandeck</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;width:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;-webkit-font-smoothing:antialiased;}
+:root{
+--or:#FF5500;--bk:#0A0A0A;--bg:#F7F7F5;--wh:#fff;
+--bd:rgba(0,0,0,.09);--tx:#0A0A0A;--mu:#6B6B6B;--hi:#AAAAAA;
+--gn:#1A7A42;--gb:#EDFAF3;--bl:#1A4BAA;--bb:#EBF2FF;
+--am:#7A4900;--ab:#FFF8E6;--rd:#CC2200;--rb:#FFF0EB;
+--go:#B8860B;--gb2:#FFFBEB;--pu:#5B2D8E;--pb:#F3EEFF;
+--r:16px;--rs:10px;
+--st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px);
+}
+#app{position:fixed;inset:0;background:var(--bg);max-width:480px;margin:0 auto;}
+.screen{display:none;flex-direction:column;height:100%;width:100%;position:absolute;top:0;left:0;background:var(--bg);overflow:hidden;}
+.screen.active{display:flex;}
+.screen.slide{animation:slin .22s ease-out;}
+@keyframes slin{from{transform:translateX(100%)}to{transform:translateX(0)}}
+.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.scroll::-webkit-scrollbar{display:none;}
+.topbar{display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--wh);border-bottom:.5px solid var(--bd);flex-shrink:0;padding-top:max(var(--st),12px);}
+.ttl{font-size:16px;font-weight:700;color:var(--tx);flex:1;}
+.back{width:36px;height:36px;border-radius:var(--rs);background:var(--bg);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--mu);flex-shrink:0;}
+.bnav{display:flex;background:var(--wh);border-top:.5px solid var(--bd);padding-bottom:max(var(--sb),8px);flex-shrink:0;}
+.ntab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 4px 6px;border:none;background:none;cursor:pointer;}
+.ntab span{font-size:10px;font-weight:700;}
+.ntab.on span,.ntab.on svg{color:var(--or);}
+.ntab:not(.on) span,.ntab:not(.on) svg{color:var(--hi);}
+.ntab svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
+.btn{width:100%;padding:15px;background:var(--or);color:#fff;border:none;border-radius:var(--r);font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity .15s;}
+.btn:active{opacity:.82;}.btn:disabled{opacity:.4;}
+.btn2{width:100%;padding:14px;background:var(--bg);color:var(--tx);border:.5px solid var(--bd);border-radius:var(--r);font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;}
+.inp{width:100%;padding:13px 14px;background:var(--bg);border:.5px solid var(--bd);border-radius:var(--rs);font-size:15px;color:var(--tx);outline:none;font-family:inherit;-webkit-appearance:none;}
+.inp:focus{border-color:var(--or);}
+.lbl{font-size:13px;font-weight:600;color:var(--mu);margin-bottom:6px;display:block;}
+.card{background:var(--wh);border:.5px solid var(--bd);border-radius:var(--r);padding:16px;}
+.dark{background:var(--bk);border-radius:var(--r);padding:18px;}
+.slbl{font-size:11px;font-weight:700;color:var(--hi);text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px;}
+.pbar{height:5px;background:var(--bg);border-radius:4px;overflow:hidden;}
+.pfill{height:100%;background:var(--or);border-radius:4px;transition:width .4s;}
+.trow{display:flex;align-items:flex-start;gap:12px;padding:14px;background:var(--wh);border:.5px solid var(--bd);border-radius:var(--r);cursor:pointer;transition:transform .1s;margin-bottom:10px;}
+.trow:active{transform:scale(.98);}
+.chip{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;}
+.c-or{background:var(--rb);color:var(--or);}.c-bl{background:var(--bb);color:var(--bl);}
+.c-gn{background:var(--gb);color:var(--gn);}.c-pu{background:var(--pb);color:var(--pu);}
+.c-rd{background:var(--rb);color:var(--rd);}.c-am{background:var(--ab);color:var(--am);}
+.i-or{background:rgba(255,85,0,.08);border:.5px solid rgba(255,85,0,.2);color:var(--or);border-radius:var(--rs);padding:12px 14px;font-size:13px;line-height:1.5;}
+.i-gn{background:var(--gb);border:.5px solid #B8E8CC;color:var(--gn);border-radius:var(--rs);padding:12px 14px;font-size:13px;line-height:1.5;}
+.i-am{background:var(--ab);border:.5px solid #F5C875;color:var(--am);border-radius:var(--rs);padding:12px 14px;font-size:13px;line-height:1.5;}
+.i-bl{background:var(--bb);border:.5px solid #B5D4F4;color:var(--bl);border-radius:var(--rs);padding:12px 14px;font-size:13px;line-height:1.5;}
+.i-pu{background:var(--pb);border:.5px solid #C9B0E8;color:var(--pu);border-radius:var(--rs);padding:12px 14px;font-size:13px;line-height:1.5;}
+.pcalc{background:var(--bk);border-radius:var(--r);padding:18px;margin-bottom:14px;}
+.pcalc-amt{font-size:40px;font-weight:700;color:#fff;line-height:1;}
+.pcalc-row{display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-bottom:.5px solid rgba(255,255,255,.1);}
+.pcalc-row:last-child{border-bottom:none;font-weight:700;font-size:15px;padding-top:8px;}
+.vcard{border-radius:var(--r);padding:16px;margin-bottom:12px;cursor:pointer;display:flex;gap:14px;align-items:flex-start;border:.5px solid var(--bd);background:var(--wh);transition:transform .12s;}
+.vcard:active{transform:scale(.98);}
+.vicon{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;}
+.pr{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:.5px solid var(--bd);}
+.pr:last-child{border-bottom:none;}
+.pro-badge{display:inline-flex;align-items:center;gap:4px;background:var(--gb2);border:.5px solid rgba(184,134,11,.3);border-radius:20px;padding:3px 9px;font-size:11px;font-weight:700;color:var(--go);}
+.earn-tag{background:var(--gb);border:.5px solid #B8E8CC;border-radius:8px;padding:4px 9px;font-size:13px;font-weight:700;color:var(--gn);white-space:nowrap;}
+.pills{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;}
+.pills::-webkit-scrollbar{display:none;}
+.pill{display:inline-flex;align-items:center;padding:8px 14px;border-radius:40px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;border:.5px solid var(--bd);background:var(--wh);color:var(--mu);flex-shrink:0;}
+.pill.on{background:var(--or);color:#fff;border-color:var(--or);}
+.ms-dot{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
+.ms-dot.done{background:var(--gb);color:var(--gn);}
+.ms-dot.act{background:var(--or);color:#fff;}
+.ms-dot.pend{background:var(--bg);color:var(--hi);border:1.5px solid var(--bd);}
+.ms-line{width:2px;height:22px;margin:3px auto;border-radius:2px;}
+.ms-line.done{background:var(--gn);}.ms-line.pend{background:var(--bd);}
+.bm{background:var(--or);color:#fff;border-radius:18px 18px 4px 18px;padding:11px 15px;max-width:76%;font-size:14px;line-height:1.5;}
+.bt{background:var(--wh);border:.5px solid var(--bd);border-radius:18px 18px 18px 4px;padding:11px 15px;max-width:76%;font-size:14px;line-height:1.5;}
+.ct{font-size:10px;color:var(--hi);margin-top:3px;}
+.otp-in{flex:1;max-width:48px;height:56px;text-align:center;font-size:22px;font-weight:700;background:var(--bg);border:1.5px solid var(--bd);border-radius:var(--rs);color:var(--tx);outline:none;font-family:inherit;}
+.otp-in:focus{border-color:var(--or);}
+.tabs{display:flex;background:var(--bg);border-radius:var(--rs);padding:3px;gap:2px;}
+.tbtn{flex:1;padding:9px;border-radius:8px;border:none;font-size:13px;font-weight:700;cursor:pointer;background:none;color:var(--mu);font-family:inherit;}
+.tbtn.on{background:var(--wh);color:var(--tx);box-shadow:0 1px 4px rgba(0,0,0,.08);}
+.role-card{padding:16px;border-radius:var(--r);text-align:center;cursor:pointer;border:2px solid var(--bd);background:var(--bg);transition:all .15s;}
+.role-card.sel{border-color:var(--or);background:rgba(255,85,0,.06);}
+/* Cart */
+.cart-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:.5px solid var(--bd);}
+.cart-item:last-child{border-bottom:none;}
+.qty-ctrl{display:flex;align-items:center;gap:8px;}
+.qty-btn{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--bd);background:var(--bg);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;}
+.qty-btn.plus{background:var(--or);color:#fff;border-color:var(--or);}
+/* Outlet card */
+.outlet-card{display:flex;align-items:center;gap:12px;padding:14px;background:var(--wh);border:.5px solid var(--bd);border-radius:var(--r);cursor:pointer;margin-bottom:10px;transition:transform .1s;}
+.outlet-card:active{transform:scale(.98);}
+/* Menu item */
+.menu-item{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:.5px solid var(--bd);}
+.menu-item:last-child{border-bottom:none;}
+/* Grocery category */
+.groc-cat{padding:14px;border-radius:var(--r);border:.5px solid var(--bd);background:var(--wh);cursor:pointer;margin-bottom:10px;display:flex;align-items:center;gap:14px;transition:transform .1s;}
+.groc-cat:active{transform:scale(.98);}
+/* Badge */
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;}
+/* Navbar (map) */
+.navbar{background:var(--bl);border-radius:var(--r);padding:14px 16px;display:flex;align-items:center;gap:12px;margin:10px 16px 0;flex-shrink:0;}
+.navbox{width:40px;height:40px;background:rgba(255,255,255,.2);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.eta-strip{display:flex;background:var(--wh);border:.5px solid var(--bd);border-radius:var(--r);overflow:hidden;margin-bottom:14px;}
+.eta-seg{flex:1;padding:12px;text-align:center;border-right:.5px solid var(--bd);}
+.eta-seg:last-child{border-right:none;}
+.stop-pill{flex:1;padding:10px;border-radius:var(--rs);border:1.5px solid var(--bd);text-align:center;cursor:pointer;}
+.stop-pill.act{border-color:var(--or);background:var(--rb);}
+.stop-pill.done-s{opacity:.5;}
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.sc{background:var(--wh);border:.5px solid var(--bd);border-radius:var(--r);padding:16px;text-align:center;}
+/* Paystack */
+.pay-logo{font-size:28px;font-weight:900;color:#00C3F7;letter-spacing:-1px;}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- LOGIN -->
+<div class="screen active" id="s-login">
+<div class="scroll">
+<div style="background:var(--bk);padding:max(var(--st),48px) 24px 36px;">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:28px;">
+    <div style="width:42px;height:42px;background:var(--or);border-radius:12px;display:flex;align-items:center;justify-content:center;"><svg style="width:22px;height:22px;fill:none;stroke:#fff;stroke-width:2.2;stroke-linecap:round;" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+    <span style="color:#fff;font-size:24px;font-weight:700;">Errandeck</span>
+  </div>
+  <h1 style="color:#fff;font-size:30px;font-weight:700;line-height:1.2;margin-bottom:8px;">Errands sorted.<br>Stress deleted.</h1>
+  <p style="color:rgba(255,255,255,.5);font-size:14px;line-height:1.6;">One app for everything in Lagos. No switching, no stress.</p>
+  <div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;">
+    <div style="background:rgba(255,255,255,.12);border-radius:20px;padding:5px 12px;font-size:11px;font-weight:600;color:rgba(255,255,255,.85);">✓ Verified Taskers</div>
+    <div style="background:rgba(255,255,255,.12);border-radius:20px;padding:5px 12px;font-size:11px;font-weight:600;color:rgba(255,255,255,.85);">🔒 Escrow payments</div>
+    <div style="background:rgba(255,255,255,.12);border-radius:20px;padding:5px 12px;font-size:11px;font-weight:600;color:rgba(255,255,255,.85);">📍 Live tracking</div>
+  </div>
+</div>
+<div style="background:var(--wh);border-radius:28px 28px 0 0;margin-top:-20px;padding:28px 20px 40px;">
+  <div style="margin-bottom:16px;">
+    <label class="lbl">Phone number</label>
+    <div style="display:flex;align-items:center;background:var(--bg);border:.5px solid var(--bd);border-radius:var(--rs);overflow:hidden;">
+      <div style="padding:13px 14px;font-size:15px;font-weight:600;color:var(--mu);border-right:.5px solid var(--bd);white-space:nowrap;">🇳🇬 +234</div>
+      <input id="login-ph" class="inp" style="border:none;border-radius:0;background:transparent;flex:1;" type="tel" inputmode="numeric" placeholder="080 123 4567"/>
+    </div>
+  </div>
+  <div style="margin-bottom:20px;">
+    <label class="lbl">I want to...</label>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div class="role-card sel" id="role-client" onclick="pickRole('client')"><div style="font-size:28px;margin-bottom:6px;">📋</div><div style="font-size:14px;font-weight:700;color:var(--or);">Post errands</div><div style="font-size:11px;color:var(--hi);margin-top:3px;">I need things done</div></div>
+      <div class="role-card" id="role-tasker" onclick="pickRole('tasker')"><div style="font-size:28px;margin-bottom:6px;">🏃</div><div style="font-size:14px;font-weight:700;color:var(--mu);">Run errands</div><div style="font-size:11px;color:var(--hi);margin-top:3px;">I want to earn</div></div>
+    </div>
+  </div>
+  <button class="btn" onclick="goOTP()" style="margin-bottom:12px;">Get OTP →</button>
+  <p style="text-align:center;font-size:12px;color:var(--hi);">Demo: any number + any 6-digit code</p>
+</div>
+</div>
+</div>
+
+<!-- OTP -->
+<div class="screen" id="s-otp">
+<div class="topbar"><button class="back" onclick="go('s-login')">←</button><div class="ttl">Verify number</div></div>
+<div class="scroll" style="padding:28px 20px;">
+  <p style="font-size:15px;color:var(--mu);margin-bottom:24px;">Code sent to <b id="otp-num" style="color:var(--tx);">+234 080 ***</b></p>
+  <div style="display:flex;gap:8px;justify-content:center;margin-bottom:28px;">
+    <input class="otp-in" id="o0" maxlength="1" type="text" inputmode="numeric" oninput="otpKey(0,this)"/>
+    <input class="otp-in" id="o1" maxlength="1" type="text" inputmode="numeric" oninput="otpKey(1,this)"/>
+    <input class="otp-in" id="o2" maxlength="1" type="text" inputmode="numeric" oninput="otpKey(2,this)"/>
+    <input class="otp-in" id="o3" maxlength="1" type="text" inputmode="numeric" oninput="otpKey(3,this)"/>
+    <input class="otp-in" id="o4" maxlength="1" type="text" inputmode="numeric" oninput="otpKey(4,this)"/>
+    <input class="otp-in" id="o5" maxlength="1" type="text" inputmode="numeric" oninput="otpKey(5,this)"/>
+  </div>
+  <button class="btn" id="otp-btn" onclick="verifyOTP()" disabled>Verify &amp; continue</button>
+  <p style="text-align:center;margin-top:16px;font-size:13px;color:var(--hi);">Didn't get it? <span style="color:var(--or);font-weight:600;cursor:pointer;" onclick="go('s-login')">Resend</span></p>
+</div>
+</div>
+
+<!-- CLIENT HOME -->
+<div class="screen" id="s-home">
+<div class="topbar" style="justify-content:space-between;">
+  <div><p style="font-size:13px;color:var(--mu);">Good day 👋</p><div class="ttl">Chioma</div></div>
+  <button onclick="go('s-cart')" style="width:40px;height:40px;background:var(--bg);border:.5px solid var(--bd);border-radius:var(--rs);cursor:pointer;display:flex;align-items:center;justify-content:center;position:relative;">
+    <svg style="width:20px;height:20px;fill:none;stroke:var(--mu);stroke-width:1.7;stroke-linecap:round;" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+    <div id="cart-badge" style="position:absolute;top:4px;right:4px;width:16px;height:16px;background:var(--or);border-radius:50%;font-size:9px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;border:1.5px solid var(--wh);">3</div>
+  </button>
+</div>
+<div class="scroll" style="padding:16px 16px 20px;">
+  <div class="dark" style="margin-bottom:20px;">
+    <p style="color:#fff;font-size:18px;font-weight:700;margin-bottom:4px;">What do you need sorted?</p>
+    <p style="color:rgba(255,255,255,.5);font-size:13px;margin-bottom:14px;">All your errands, one app — pricing auto-calculated</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <div style="background:rgba(255,255,255,.12);border-radius:8px;padding:5px 10px;font-size:11px;color:rgba(255,255,255,.85);font-weight:600;">⏱ Time-based</div>
+      <div style="background:rgba(255,255,255,.12);border-radius:8px;padding:5px 10px;font-size:11px;color:rgba(255,255,255,.85);font-weight:600;">📏 Distance-based</div>
+      <div style="background:rgba(255,255,255,.12);border-radius:8px;padding:5px 10px;font-size:11px;color:rgba(255,255,255,.85);font-weight:600;">🛒 Cart &amp; checkout</div>
+    </div>
+  </div>
+  <p class="slbl">Services</p>
+  <div class="vcard" onclick="go('s-general')"><div class="vicon" style="background:#FFF0EB;">🏃</div><div style="flex:1;"><p style="font-size:16px;font-weight:700;margin-bottom:3px;">General Errands</p><p style="font-size:12px;color:var(--mu);line-height:1.5;">Any personal errand — time auto-calculated.</p><div style="margin-top:6px;display:flex;gap:6px;"><span class="chip c-or">⏱ ₦3,500/hr base</span><span class="chip c-or">+₦1,000/30min</span></div></div><span style="color:var(--hi);font-size:20px;align-self:center;">›</span></div>
+  <div class="vcard" onclick="go('s-food')"><div class="vicon" style="background:#FFF0F0;">🍱</div><div style="flex:1;"><p style="font-size:16px;font-weight:700;margin-bottom:3px;">Food &amp; Pharmacy</p><p style="font-size:12px;color:var(--mu);line-height:1.5;">Order from restaurants, cafés, pharmacies nearby.</p><div style="margin-top:6px;"><span class="chip c-rd">Flat ₦500/errand</span></div></div><span style="color:var(--hi);font-size:20px;align-self:center;">›</span></div>
+  <div class="vcard" onclick="go('s-dispatch')"><div class="vicon" style="background:var(--bb);">🛵</div><div style="flex:1;"><p style="font-size:16px;font-weight:700;margin-bottom:3px;">Dispatch &amp; Delivery</p><p style="font-size:12px;color:var(--mu);line-height:1.5;">Send packages across Lagos — priced by distance.</p><div style="margin-top:6px;"><span class="chip c-bl">📏 ₦100 per km</span></div></div><span style="color:var(--hi);font-size:20px;align-self:center;">›</span></div>
+  <div class="vcard" onclick="go('s-grocery')"><div class="vicon" style="background:var(--gb);">🛒</div><div style="flex:1;"><p style="font-size:16px;font-weight:700;margin-bottom:3px;">Grocery Shopping</p><p style="font-size:12px;color:var(--mu);line-height:1.5;">Fresh produce, household supplies, protein, drinks and more.</p><div style="margin-top:6px;"><span class="chip c-gn">⏱ Time-based pricing</span></div></div><span style="color:var(--hi);font-size:20px;align-self:center;">›</span></div>
+  <div class="vcard" onclick="go('s-artisan')"><div class="vicon" style="background:var(--pb);">🔧</div><div style="flex:1;"><p style="font-size:16px;font-weight:700;margin-bottom:3px;">Artisan &amp; Home Services</p><p style="font-size:12px;color:var(--mu);line-height:1.5;">Plumbers, electricians, cleaners, AC techs — all verified on Errandeck.</p><div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap;"><span class="chip c-pu">🔧 Plumbing</span><span class="chip c-pu">⚡ Electrical</span><span class="chip c-pu">🧹 Cleaning</span></div></div><span style="color:var(--hi);font-size:20px;align-self:center;">›</span></div>
+  <p class="slbl" style="margin-top:6px;">Active task</p>
+  <div class="trow" onclick="go('s-track')">
+    <div style="width:46px;height:46px;border-radius:var(--rs);background:#FFF0EB;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">🏃</div>
+    <div style="flex:1;min-width:0;">
+      <div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:4px;"><p style="font-size:14px;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Pick up documents — Lekki Phase 1</p><span class="badge" style="background:var(--ab);color:var(--am);flex-shrink:0;">In progress</span></div>
+      <p style="font-size:12px;color:var(--mu);margin-bottom:4px;">General Errand · Emeka O. ⭐ Pro</p>
+      <div class="pbar"><div class="pfill" style="width:50%"></div></div>
+      <p style="font-size:11px;color:var(--hi);margin-top:4px;">3/6 milestones · ~1.5hr · ₦4,500</p>
+    </div>
+  </div>
+</div>
+<div class="bnav">
+  <button class="ntab on"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Home</span></button>
+  <button class="ntab" onclick="go('s-track')"><svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/></svg><span>Tasks</span></button>
+  <button class="ntab" onclick="go('s-cart')"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg><span>Cart</span></button>
+  <button class="ntab"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Profile</span></button>
+</div>
+</div>
+
+<!-- FOOD & PHARMACY — OUTLET LIST -->
+<div class="screen" id="s-food">
+<div class="topbar"><button class="back" onclick="go('s-home')">←</button><div class="ttl">Food &amp; Pharmacy</div></div>
+<div style="padding:10px 16px 8px;background:var(--wh);border-bottom:.5px solid var(--bd);flex-shrink:0;">
+  <div class="pills">
+    <div class="pill on" onclick="filterOutlets('all',this)">🔥 All</div>
+    <div class="pill" onclick="filterOutlets('restaurant',this)">🍽 Restaurants</div>
+    <div class="pill" onclick="filterOutlets('cafe',this)">☕ Cafés</div>
+    <div class="pill" onclick="filterOutlets('pharmacy',this)">💊 Pharmacies</div>
+  </div>
+</div>
+<div class="scroll" style="padding:14px 16px;">
+  <div id="outlet-list">
+    <!-- Restaurants -->
+    <div class="outlet-card" data-type="restaurant" onclick="go('s-outlet-mama')">
+      <div style="width:52px;height:52px;border-radius:12px;background:#FFF0F0;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;">🍲</div>
+      <div style="flex:1;min-width:0;"><p style="font-size:15px;font-weight:700;">Mama Titi's Kitchen</p><p style="font-size:12px;color:var(--mu);">Local Nigerian · Lekki Phase 1</p><div style="display:flex;align-items:center;gap:8px;margin-top:4px;"><span style="font-size:12px;">⭐ 4.8</span><span class="chip c-gn" style="font-size:10px;">Open</span><span style="font-size:11px;color:var(--mu);">📍 1.2 km · ~8 min</span></div></div>
+      <span style="color:var(--hi);font-size:18px;">›</span>
+    </div>
+    <div class="outlet-card" data-type="restaurant" onclick="go('s-outlet-kitchen')">
+      <div style="width:52px;height:52px;border-radius:12px;background:#FFF0F0;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;">🍗</div>
+      <div style="flex:1;min-width:0;"><p style="font-size:15px;font-weight:700;">The Grill House</p><p style="font-size:12px;color:var(--mu);">Grills &amp; BBQ · Victoria Island</p><div style="display:flex;align-items:center;gap:8px;margin-top:4px;"><span style="font-size:12px;">⭐ 4.6</span><span class="chip c-gn" style="font-size:10px;">Open</span><span style="font-size:11px;color:var(--mu);">📍 3.4 km · ~18 min</span></div></div>
+      <span style="color:var(--hi);font-size:18px;">›</span>
+    </div>
+    <div class="outlet-card" data-type="restaurant" onclick="go('s-outlet-abuja')">
+      <div style="width:52px;height:52px;border-radius:12px;background:#FFF0F0;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;">🍛</div>
+      <div style="flex:1;min-width:0;"><p style="font-size:15px;font-weight:700;">Abuja Kitchen</p><p style="font-size:12px;color:var(--mu);">Northern Nigerian · Ikeja</p><div style="display:flex;align-items:center;gap:8px;margin-top:4px;"><span style="font-size:12px;">⭐ 4.5</span><span class="chip c-am" style="font-size:10px;">Busy</span><span style="font-size:11px;color:var(--mu);">📍 2.1 km · ~12 min</span></div></div>
+      <span style="color:var(--hi);font-size:18px;">›</span>
+    </div>
+    <!-- Cafes -->
+    <div class="outlet-card" data-type="cafe" onclick="go('s-outlet-coffee')">
+      <div style="width:52px;height:52px;border-radius:12px;background:#FFF8E6;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;">☕</div>
+      <div style="flex:1;min-width:0;"><p style="font-size:15px;font-weight:700;">The Bean Spot</p><p style="font-size:12px;color:var(--mu);">Coffee &amp; Pastries · Lekki</p><div style="display:flex;align-items:center;gap:8px;margin-top:4px;"><span style="font-size:12px;">⭐ 4.9</span><span class="chip c-gn" style="font-size:10px;">Open</span><span style="font-size:11px;color:var(--mu);">📍 0.8 km · ~5 min</span></div></div>
+      <span style="color:var(--hi);font-size:18px;">›</span>
+    </div>
+    <div class="outlet-card" data-type="cafe" onclick="go('s-outlet-coffee')">
+      <div style="width:52px;height:52px;border-radius:12px;background:#FFF8E6;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;">🧋</div>
+      <div style="flex:1;min-width:0;"><p style="font-size:15px;font-weight:700;">Lagos Brews Co.</p><p style="font-size:12px;color:var(--mu);">Smoothies &amp; Café · VI</p><div style="display:flex;align-items:center;gap:8px;margin-top:4px;"><span style="font-size:12px;">⭐ 4.7</span><span class="chip c-gn" style="font-size:10px;">Open</span><span style="font-size:11px;color:var(--mu);">📍 4.1 km · ~22 min</span></div></div>
+      <span style="color:var(--hi);font-size:18px;">›</span>
+    </div>
+    <!-- Pharmacies -->
+    <div class="outlet-card" data-type="pharmacy" onclick="go('s-outlet-pharma')">
+      <div style="width:52px;height:52px;border-radius:12px;background:var(--bb);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;">💊</div>
+      <div style="flex:1;min-width:0;"><p style="font-size:15px;font-weight:700;">HealthPlus Pharmacy</p><p style="font-size:12px;color:var(--mu);">Full-service pharmacy · Lekki</p><div style="display:flex;align-items:center;gap:8px;margin-top:4px;"><span style="font-size:12px;">⭐ 4.8</span><span class="chip c-gn" style="font-size:10px;">Open 24hrs</span><span style="font-size:11px;color:var(--mu);">📍 1.5 km · ~9 min</span></div></div>
+      <span style="color:var(--hi);font-size:18px;">›</span>
+    </div>
+    <div class="outlet-card" data-type="pharmacy" onclick="go('s-outlet-pharma')">
+      <div style="width:52px;height:52px;border-radius:12px;background:var(--bb);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;">🏥</div>
+      <div style="flex:1;min-width:0;"><p style="font-size:15px;font-weight:700;">MedPlus Pharmacy</p><p style="font-size:12px;color:var(--mu);">Drugs &amp; healthcare · Ikeja</p><div style="display:flex;align-items:center;gap:8px;margin-top:4px;"><span style="font-size:12px;">⭐ 4.6</span><span class="chip c-gn" style="font-size:10px;">Open</span><span style="font-size:11px;color:var(--mu);">📍 2.8 km · ~15 min</span></div></div>
+      <span style="color:var(--hi);font-size:18px;">›</span>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- OUTLET: Mama Titi (restaurant menu) -->
+<div class="screen" id="s-outlet-mama">
+<div class="topbar"><button class="back" onclick="go('s-food')">←</button><div style="flex:1;"><div class="ttl">Mama Titi's Kitchen</div><p style="font-size:11px;color:var(--mu);">📍 1.2 km · ⭐ 4.8 · Flat ₦500 delivery</p></div><button onclick="go('s-cart')" style="position:relative;background:none;border:none;cursor:pointer;padding:4px;"><svg style="width:22px;height:22px;fill:none;stroke:var(--mu);stroke-width:1.7;stroke-linecap:round;" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg><div id="cart-badge2" style="position:absolute;top:0;right:0;width:14px;height:14px;background:var(--or);border-radius:50%;font-size:8px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;">3</div></button></div>
+<div class="scroll" style="padding:14px 16px 100px;">
+  <div style="border-radius:var(--r);overflow:hidden;margin-bottom:16px;background:linear-gradient(135deg,#FF5500,#FF8C42);padding:20px;display:flex;justify-content:space-between;align-items:center;">
+    <div><p style="color:#fff;font-size:18px;font-weight:700;">🍲 Nigerian Delights</p><p style="color:rgba(255,255,255,.75);font-size:13px;margin-top:4px;">Mon–Sun · 8am–10pm</p></div>
+    <span style="font-size:42px;">👩‍🍳</span>
+  </div>
+  <p class="slbl">Rice dishes</p>
+  <div style="background:var(--wh);border:.5px solid var(--bd);border-radius:var(--r);padding:0 16px;margin-bottom:14px;">
+    <div class="menu-item"><div style="font-size:26px;flex-shrink:0;">🍚</div><div style="flex:1;"><p style="font-size:14px;font-weight:600;">Jollof Rice + Chicken</p><p style="font-size:12px;color:var(--mu);">Smoky party jollof with 2 pieces chicken</p><p style="font-size:14px;font-weight:700;color:var(--or);margin-top:3px;">₦1,800</p></div><div class="qty-ctrl"><button class="qty-btn" onclick="addToCart('Jollof Rice + Chicken',1800,this)">+</button></div></div>
+    <div class="menu-item"><div style="font-size:26px;flex-shrink:0;">🍛</div><div style="flex:1;"><p style="font-size:14px;font-weight:600;">Fried Rice + Fish</p><p style="font-size:12px;color:var(--mu);">Nigerian fried rice, grilled tilapia</p><p style="font-size:14px;font-weight:700;color:var(--or);margin-top:3px;">₦2,000</p></div><div class="qty-ctrl"><button class="qty-btn" onclick="addToCart('Fried Rice + Fish',2000,this)">+</button></div></div>
+    <div class="menu-item"><div style="font-size:26px;flex-shrink:0;">🥘</div><div style="flex:1;"><p style="font-size:14px;font-weight:600;">Native Soup + Fufu</p><p style="font-size:12px;color:var(--mu);">Banga soup with assorted meat</p><p style="font-size:14px;font-weight:700;color:var(--or);margin-top:3px;">₦2,500</p></div><div class="qty-ctrl"><button class="qty-btn" onclick="addToCart('Native Soup + Fufu',2500,this)">+</button></div></div>
+  </div>
+  <p class="slbl">Proteins</p>
+  <div style="background:var(--wh);border:.5px solid var(--bd);border-radius:var(--r);padding:0 16px;margin-bottom:14px;">
+    <div class="menu-item"><div style="font-size:26px;flex-shrink:0;">🍗</div><div style="flex:1;"><p style="font-size:14px;font-weight:600;">Grilled Chicken (2 pcs)</p><p style="font-size:12px;color:var(--mu);">Seasoned, charcoal-grilled</p><p style="font-size:14px;font-weight:700;color:var(--or);margin-top:3px;">₦1,200</p></div><div class="qty-ctrl"><button class="qty-btn" onclick="addToCart('Grilled Chicken (2 pcs)',1200,this)">+</button></div></div>
+    <div class="menu-item"><div style="font-size:26px;flex-shrink:0;">🐟</div><div style="flex:1;"><p style="font-size:14px;font-weight:600;">Catfish Pepper Soup</p><p style="font-size:12px;color:var(--mu);">Freshly prepared, very spicy</p><p style="font-size:14px;font-weight:700;color:var(--or);margin-top:3px;">₦2,200</p></div><div class="qty-ctrl"><button class="qty-btn" onclick="addToCart('Catfish Pepper Soup',2200,this)">+</button></div></div>
+  </div>
+  <p class="slbl">Sides &amp; Drinks</p>
+  <div style="background:var(--wh);border:.5px solid var(--bd);border-radius:var(--r);padding:0 16px;margin-bottom:14px;">
+    <div class="menu-item"><div style="font-size:26px;flex-shrink:0;">🥗</div><div style="flex:1;"><p style="font-size:14px;font-weight:600;">Coleslaw</p><p style="font-size:12px;color:var(--mu);">Fresh, creamy coleslaw</p><p style="font-size:14px;font-weight:700;color:var(--or);margin-top:3px;">₦400</p></div><div class="qty-ctrl"><button class="qty-btn" onclick="addToCart('Coleslaw',400,this)">+</button></div></div>
+    <div class="menu-item"><div style="font-size:26px;flex-shrink:0;">🧃</div><div style="flex:1;"><p style="font-size:14px;font-weight:600;">Zobo Drink (500ml)</p><p style="font-size:12px;color:var(--mu);">Homemade hibiscus drink</p><p style="font-size:14px;font-weight:700;color:var(--or);margin-top:3px;">₦500</p></div><div class="qty-ctrl"><button class="qty-btn" onclick="addToCart('Zobo Drink',500,this)">+</button></div></div>
+    <div class="menu-item"><div style="font-size:26px;flex-shrink:0;">🥤</div><div style="flex:1;"><p style="font-size:14px;font-weight:600;">Soft Drink (can)</p><p style="font-size:12px;color:var(--mu);">Coke, Fanta, Sprite</p><p style="font-size:14px;font-weight:700;color:var(--or);margin-top:3px;">₦300</p></div><div class="qty-ctrl"><button class="qty-btn" onclick="addToCart('Soft Drink',300,this)">+</button></div></div>
+  </div>
+</div>
+<div style="position:absolute;bottom:0;left:0;right:0;padding:14px 16px;padding-bottom:max(var(--sb),14px);background:var(--wh);border-top:.5px solid var(--bd);">
+  <button class="btn" onclick="go('s-cart')">View cart — ₦500 delivery → <span id="mama-cart-count"></span></button>
+</div>
+</div>
+
+<!-- PHARMACY OUTLET -->
+<div class="screen" id="s-outlet-pharma">
+<div class="topbar"><button class="back" onclick="go('s-food')">←</button><div style="flex:1;"><div class="ttl">HealthPlus Pharmacy</div><p style="font-size:11px;color:var(--mu);">📍 1.5 km · Open 24hrs · Flat ₦500 delivery</p></div></div>
+<div class="scroll" style="padding:14px 16px 100px;">
+  <div style="border-radius:var(--r);background:var(--bb);padding:20px;display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+    <div><p style="color:var(--bl);font-size:18px;font-weight:700;">💊 Drugs &amp; Healthcare</p><p style="font-size:13px;color:var(--mu);margin-top:4px;">Open 24 hours · Licensed pharmacist on duty</p></div><span style="font-size:40px;">🏥</span>
+  </div>
+  <div class="i-am" style="margin-bottom:14px;">⚠️ Prescription drugs require a valid prescription photo. Upload during checkout or at the pharmacy.</div>
+  <p class="slbl">Common medications</p>
+  <div style="background:var(--wh);border:.5px solid var(--bd);border-radius:var(--r);padding:0 16px;margin-bottom:14px;">
+    <div class="menu-item"><div style="font-size:26px;flex-shrink:0;">💊</div><div style="flex:1;"><p style="font-size:14px;font-weight:600;">Paracetamol 500mg (10 tabs)</p><p style="font-size:12px;color:var(--mu);">Pain &amp; fever relief — OTC</p><p style="font-size:14px;font-weight:700;color:var(--or);margin-top:3px;">₦200</p></div><button class="qty-btn" onclick="addToCart('Paracetamol 500mg',200,this)">+</button></div>
+    <div class="menu-item"><div style="font-size:26px;flex-shrink:0;">💊</div><div style="flex:1;"><p style="font-size:14px;font-weight:600;">Amoxicillin 500mg (15 caps)</p><p style="font-size:12px;color:var(--mu);">Antibiotic — prescription required</p><p style="font-size:14px;font-weight:700;color:var(--or);margin-top:3px;">₦1,200</p></div><button class="qty-btn" onclick="addToCart('Amoxicillin 500mg',1200,this)">+</button></div>
+    <div class="menu-item"><div style="font-size:26px;flex-shrink:0;">🩺</div><div style="flex:1;"><p style="font-size:14px;font-weight:600;">Malaria Rapid Test Kit</p><p style="font-size:12px;color:var(--mu);">Self-test, result in 15 mins</p><p style="font-size:14px;font-weight:700;color:var(--or);margin-top:3px;">₦800</p></div><button class="qty-btn" onclick="addToCart('Malaria Rapid Test Kit',800,this)">+</button></div>
+    <div class="menu-item"><div style="font-size:26px;flex-shrink:0;">💊</div><div style="flex:1;"><p style="font-size:14px;font-weight:600;">Vitamin C 1000mg (30 tabs)</p><p style="font-size:12px;color:var(--mu);">Immune support — OTC</p><p style="font-size:14px;font-weight:700;color:var(--or);margin-top:3px;">₦1,500</p></div><button class="qty-btn" onclick="addToCart('Vitamin C 1000mg',1500,this)">+</button></div>
+  </div>
+  <p class="slbl">Baby &amp; maternal</p>
+  <div style="background:var(--wh);border:.5px solid var(--bd);border-radius:var(--r);padding:0 16px;margin-bottom:14px;">
+    <div class="menu-item"><div style="font-size:26px;flex-shrink:0;">🍼</div><div style="flex:1;"><p style="font-size:14px;font-weight:600;">Cerelac (400g)</p><p style="font-size:12px;color:var(--mu);">Baby cereal, wheat variant</p><p style="font-size:14px;font-weight:700;color:var(--or);margin-top:3px;">₦2,200</p></div><button class="qty-btn" onclick="addToCart('Cerelac 400g',2200,this)">+</button></div>
+    <div class="menu-item"><div style="font-size:26px;flex-shrink:0;">🧴</div><div style="flex:1;"><p style="font-size:14px;font-weight:600;">Pampers Active (size 3, 18 pcs)</p><p style="font-size:12px;color:var(--mu);">Newborn &amp; infant</p><p style="font-size:14px;font-weight:700;color:var(--or);margin-top:3px;">₦3,500</p></div><button class="qty-btn" onclick="addToCart('Pampers Active S3',3500,this)">+</button></div>
+  </div>
+</div>
+<div style="position:absolute;bottom:0;left:0;right:0;padding:14px 16px;padding-bottom:max(var(--sb),14px);background:var(--wh);border-top:.5px solid var(--bd);">
+  <button class="btn" onclick="go('s-cart')">View cart — ₦500 delivery →</button>
+</div>
+</div>
+
+<!-- GROCERY — CATEGORIES -->
+<div class="screen" id="s-grocery">
+<div class="topbar"><button class="back" onclick="go('s-home')">←</button><div class="ttl">Grocery Shopping</div><button onclick="go('s-cart')" style="position:relative;background:none;border:none;cursor:pointer;padding:4px;"><svg style="width:22px;height:22px;fill:none;stroke:var(--mu);stroke-width:1.7;stroke-linecap:round;" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg><div id="groc-cart-badge" style="position:absolute;top:0;right:0;width:14px;height:14px;background:var(--or);border-radius:50%;font-size:8px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;">3</div></button></div>
+<div class="scroll" style="padding:14px 16px 20px;">
+  <div class="i-gn" style="margin-bottom:16px;">Time-based pricing — same as General Errands. Base ₦3,500/1hr + ₦500 platform fee. Price auto-calculates from your list size and store distance.</div>
+  <p class="slbl">What are you shopping for?</p>
+  <div class="groc-cat" onclick="go('s-groc-produce')"><div style="width:48px;height:48px;border-radius:12px;background:var(--gb);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">🥦</div><div style="flex:1;"><p style="font-size:15px;font-weight:700;">Fresh Produce</p><p style="font-size:12px;color:var(--mu);">Vegetables, fruits, leafy greens, tomatoes</p></div><span style="color:var(--hi);">›</span></div>
+  <div class="groc-cat" onclick="go('s-groc-protein')"><div style="width:48px;height:48px;border-radius:12px;background:var(--rb);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">🥩</div><div style="flex:1;"><p style="font-size:15px;font-weight:700;">Protein &amp; Meat</p><p style="font-size:12px;color:var(--mu);">Chicken, beef, fish, eggs, tofu</p></div><span style="color:var(--hi);">›</span></div>
+  <div class="groc-cat" onclick="go('s-groc-staples')"><div style="width:48px;height:48px;border-radius:12px;background:var(--ab);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">🌾</div><div style="flex:1;"><p style="font-size:15px;font-weight:700;">Staples &amp; Pantry</p><p style="font-size:12px;color:var(--mu);">Rice, pasta, flour, oil, spices</p></div><span style="color:var(--hi);">›</span></div>
+  <div class="groc-cat" onclick="go('s-groc-dairy')"><div style="width:48px;height:48px;border-radius:12px;background:var(--bb);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">🥛</div><div style="flex:1;"><p style="font-size:15px;font-weight:700;">Dairy &amp; Beverages</p><p style="font-size:12px;color:var(--mu);">Milk, yoghurt, juice, soft drinks, water</p></div><span style="color:var(--hi);">›</span></div>
+  <div class="groc-cat" onclick="go('s-groc-household')"><div style="width:48px;height:48px;border-radius:12px;background:var(--pb);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">🧹</div><div style="flex:1;"><p style="font-size:15px;font-weight:700;">Household Supplies</p><p style="font-size:12px;color:var(--mu);">Detergent, cleaning products, toiletries</p></div><span style="color:var(--hi);">›</span></div>
+  <div class="groc-cat" onclick="go('s-groc-snacks')"><div style="width:48px;height:48px;border-radius:12px;background:var(--gb2);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">🍫</div><div style="flex:1;"><p style="font-size:15px;font-weight:700;">Snacks &amp; Treats</p><p style="font-size:12px;color:var(--mu);">Biscuits, chips, chocolates, sweets</p></div><span style="color:var(--hi);">›</span></div>
+</div>
+</div>
+
+<!-- GROCERY — FRESH PRODUCE items -->
+<div class="screen" id="s-groc-produce">
+<div class="topbar"><button class="back" onclick="go('s-grocery')">←</button><div class="ttl">Fresh Produce</div><button onclick="go('s-cart')" style="position:relative;background:none;border:none;cursor:pointer;padding:4px;"><svg style="width:22px;height:22px;fill:none;stroke:var(--mu);stroke-width:1.7;stroke-linecap:round;" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg><div style="position:absolute;top:0;right:0;width:14px;height:14px;background:var(--or);border-radius:50%;font-size:8px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;" id="prod-badge">3</div></button></div>
+<div class="scroll" style="padding:14px 16px 100px;">
+  <p class="slbl">Vegetables</p>
+  <div style="background:var(--wh);border:.5px solid var(--bd);border-radius:var(--r);padding:0 16px;margin-bottom:14px;">
+    <div class="menu-item"><span style="font-size:26px;flex-shrink:0;">🍅</span><div style="flex:1;"><p style="font-size:14px;font-weight:600;">Tomatoes (500g)</p><p style="font-size:12px;color:var(--mu);">Fresh local tomatoes</p><p style="font-size:13px;font-weight:700;color:var(--or);margin-top:2px;">₦400</p></div><button class="qty-btn" onclick="addToCart('Tomatoes 500g',400,this)">+</button></div>
+    <div class="menu-item"><span style="font-size:26px;flex-shrink:0;">🌶️</span><div style="flex:1;"><p style="font-size:14px;font-weight:600;">Pepper assorted (300g)</p><p style="font-size:12px;color:var(--mu);">Tatashe, shombo, scotch bonnet</p><p style="font-size:13px;font-weight:700;color:var(--or);margin-top:2px;">₦350</p></div><button class="qty-btn" onclick="addToCart('Pepper assorted',350,this)">+</button></div>
+    <div class="menu-item"><span style="font-size:26px;flex-shrink:0;">🧅</span><div style="flex:1;"><p style="font-size:14px;font-weight:600;">Onions (3 medium)</p><p style="font-size:12px;color:var(--mu);">Red onions</p><p style="font-size:13px;font-weight:700;color:var(--or);margin-top:2px;">₦300</p></div><button class="qty-btn" onclick="addToCart('Onions (3)',300,this)">+</button></div>
+    <div class="menu-item"><span style="font-size:26px;flex-shrink:0;">🥬</span><div style="flex:1;"><p style="font-size:14px;font-weight:600;">Ugu (pumpkin leaf)</p><p style="font-size:12px;color:var(--mu);">Fresh bunch, soup leaf</p><p style="font-size:13px;font-weight:700;color:var(--or);margin-top:2px;">₦250</p></div><button class="qty-btn" onclick="addToCart('Ugu leaf',250,this)">+</button></div>
+    <div class="menu-item"><span style="font-size:26px;flex-shrink:0;">🫑</span><div style="flex:1;"><p style="font-size:14px;font-weight:600;">Green pepper (2 pcs)</p><p style="font-size:12px;color:var(--mu);">Sweet bell pepper</p><p style="font-size:13px;font-weight:700;color:var(--or);margin-top:2px;">₦200</p></div><button class="qty-btn" onclick="addToCart('Green pepper',200,this)">+</button></div>
+  </div>
+  <p class="slbl">Fruits</p>
+  <div style="background:var(--wh);border:.5px solid var(--bd);border-radius:var(--r);padding:0 16px;margin-bottom:14px;">
+    <div class="menu-item"><span style="font-size:26px;flex-shrink:0;">🍌</span><div style="flex:1;"><p style="font-size:14px;font-weight:600;">Banana (bunch ~6)</p><p style="font-size:12px;color:var(--mu);">Ripe plantain banana</p><p style="font-size:13px;font-weight:700;color:var(--or);margin-top:2px;">₦500</p></div><button class="qty-btn" onclick="addToCart('Banana bunch',500,this)">+</button></div>
+    <div class="menu-item"><span style="font-size:26px;flex-shrink:0;">🍊</span><div style="flex:1;"><p style="font-size:14px;font-weight:600;">Oranges (4 pcs)</p><p style="font-size:12px;color:var(--mu);">Sweet Valencia oranges</p><p style="font-size:13px;font-weight:700;color:var(--or);margin-top:2px;">₦400</p></div><button class="qty-btn" onclick="addToCart('Oranges (4)',400,this)">+</button></div>
+    <div class="menu-item"><span style="font-size:26px;flex-shrink:0;">🥭</span><div style="flex:1;"><p style="font-size:14px;font-weight:600;">Mango (2 large)</p><p style="font-size:12px;color:var(--mu);">Juicy, in season</p><p style="font-size:13px;font-weight:700;color:var(--or);margin-top:2px;">₦600</p></div><button class="qty-btn" onclick="addToCart('Mango (2)',600,this)">+</button></div>
+  </div>
+</div>
+<div style="position:absolute;bottom:0;left:0;right:0;padding:14px 16px;padding-bottom:max(var(--sb),14px);background:var(--wh);border-top:.5px solid var(--bd);">
+  <button class="btn" onclick="go('s-cart')">View cart (<span id="groc-cart-count">0 items</span>) →</button>
+</div>
+</div>
+
+<!-- GROCERY — STAPLES -->
+<div class="screen" id="s-groc-staples">
+<div class="topbar"><button class="back" onclick="go('s-grocery')">←</button><div class="ttl">Staples &amp; Pantry</div></div>
+<div class="scroll" style="padding:14px 16px 100px;">
+  <div style="background:var(--wh);border:.5px solid var(--bd);border-radius:var(--r);padding:0 16px;margin-bottom:14px;">
+    <div class="menu-item"><span style="font-size:26px;flex-shrink:0;">🌾</span><div style="flex:1;"><p style="font-size:14px;font-weight:600;">Mama Gold Rice (5kg)</p><p style="font-size:12px;color:var(--mu);">Long grain parboiled rice</p><p style="font-size:13px;font-weight:700;color:var(--or);margin-top:2px;">₦4,200</p></div><button class="qty-btn" onclick="addToCart('Mama Gold Rice 5kg',4200,this)">+</button></div>
+    <div class="menu-item"><span style="font-size:26px;flex-shrink:0;">🍜</span><div style="flex:1;"><p style="font-size:14px;font-weight:600;">Indomie Noodles (carton)</p><p style="font-size:12px;color:var(--mu);">40 sachets, chicken flavour</p><p style="font-size:13px;font-weight:700;color:var(--or);margin-top:2px;">₦3,800</p></div><button class="qty-btn" onclick="addToCart('Indomie Noodles carton',3800,this)">+</button></div>
+    <div class="menu-item"><span style="font-size:26px;flex-shrink:0;">🧴</span><div style="flex:1;"><p style="font-size:14px;font-weight:600;">Kings Vegetable Oil (2L)</p><p style="font-size:12px;color:var(--mu);">Refined vegetable oil</p><p style="font-size:13px;font-weight:700;color:var(--or);margin-top:2px;">₦2,800</p></div><button class="qty-btn" onclick="addToCart('Vegetable Oil 2L',2800,this)">+</button></div>
+    <div class="menu-item"><span style="font-size:26px;flex-shrink:0;">🫙</span><div style="flex:1;"><p style="font-size:14px;font-weight:600;">Seasoning cubes (Maggi 50pcs)</p><p style="font-size:12px;color:var(--mu);">Chicken flavour</p><p style="font-size:13px;font-weight:700;color:var(--or);margin-top:2px;">₦600</p></div><button class="qty-btn" onclick="addToCart('Maggi cubes 50pcs',600,this)">+</button></div>
+    <div class="menu-item"><span style="font-size:26px;flex-shrink:0;">🧂</span><div style="flex:1;"><p style="font-size:14px;font-weight:600;">Table salt (1kg)</p><p style="font-size:12px;color:var(--mu);">Iodized salt</p><p style="font-size:13px;font-weight:700;color:var(--or);margin-top:2px;">₦350</p></div><button class="qty-btn" onclick="addToCart('Table Salt 1kg',350,this)">+</button></div>
+  </div>
+</div>
+<div style="position:absolute;bottom:0;left:0;right:0;padding:14px 16px;padding-bottom:max(var(--sb),14px);background:var(--wh);border-top:.5px solid var(--bd);">
+  <button class="btn" onclick="go('s-cart')">View cart →</button>
+</div>
+</div>
+
+<!-- GROCERY — DAIRY & BEVERAGES -->
+<div class="screen" id="s-groc-dairy">
+<div class="topbar"><button class="back" onclick="go('s-grocery')">←</button><div class="ttl">Dairy &amp; Beverages</div></div>
+<div class="scroll" style="padding:14px 16px 100px;">
+  <div style="background:var(--wh);border:.5px solid var(--bd);border-radius:var(--r);padding:0 16px;margin-bottom:14px;">
+    <div class="menu-item"><span style="font-size:26px;flex-shrink:0;">🥛</span><div style="flex:1;"><p style="font-size:14px;font-weight:600;">Dano Full Cream Milk (800g)</p><p style="font-size:12px;color:var(--mu);">Powdered milk, full cream</p><p style="font-size:13px;font-weight:700;color:var(--or);margin-top:2px;">₦2,400</p></div><button class="qty-btn" onclick="addToCart('Dano Milk 800g',2400,this)">+</button></div>
+    <div class="menu-item"><span style="font-size:26px;flex-shrink:0;">🥛</span><div style="flex:1;"><p style="font-size:14px;font-weight:600;">Peak Milk tin (400g)</p><p style="font-size:12px;color:var(--mu);">Evaporated milk</p><p style="font-size:13px;font-weight:700;color:var(--or);margin-top:2px;">₦900</p></div><button class="qty-btn" onclick="addToCart('Peak Milk tin',900,this)">+</button></div>
+    <div class="menu-item"><span style="font-size:26px;flex-shrink:0;">🍶</span><div style="flex:1;"><p style="font-size:14px;font-weight:600;">Hollandia Yoghurt (500ml)</p><p style="font-size:12px;color:var(--mu);">Strawberry flavour</p><p style="font-size:13px;font-weight:700;color:var(--or);margin-top:2px;">₦650</p></div><button class="qty-btn" onclick="addToCart('Hollandia Yoghurt',650,this)">+</button></div>
+    <div class="menu-item"><span style="font-size:26px;flex-shrink:0;">🧃</span><div style="flex:1;"><p style="font-size:14px;font-weight:600;">Chi Exotic Juice (1L)</p><p style="font-size:12px;color:var(--mu);">Pineapple or orange</p><p style="font-size:13px;font-weight:700;color:var(--or);margin-top:2px;">₦700</p></div><button class="qty-btn" onclick="addToCart('Chi Juice 1L',700,this)">+</button></div>
+    <div class="menu-item"><span style="font-size:26px;flex-shrink:0;">💧</span><div style="flex:1;"><p style="font-size:14px;font-weight:600;">Eva Water (1.5L × 6)</p><p style="font-size:12px;color:var(--mu);">Pack of 6 bottles</p><p style="font-size:13px;font-weight:700;color:var(--or);margin-top:2px;">₦1,800</p></div><button class="qty-btn" onclick="addToCart('Eva Water 6-pack',1800,this)">+</button></div>
+  </div>
+</div>
+<div style="position:absolute;bottom:0;left:0;right:0;padding:14px 16px;padding-bottom:max(var(--sb),14px);background:var(--wh);border-top:.5px solid var(--bd);">
+  <button class="btn" onclick="go('s-cart')">View cart →</button>
+</div>
+</div>
+
+<!-- CART -->
+<div class="screen" id="s-cart">
+<div class="topbar"><button class="back" onclick="go('s-home')">←</button><div class="ttl">Your cart</div><button id="cart-clear" onclick="clearCart()" style="font-size:12px;color:var(--rd);font-weight:600;background:none;border:none;cursor:pointer;">Clear all</button></div>
+<div class="scroll" style="padding:16px 16px 20px;">
+  <div id="cart-empty" style="text-align:center;padding:60px 20px;display:none;">
+    <div style="font-size:52px;margin-bottom:16px;">🛒</div>
+    <p style="font-size:18px;font-weight:700;margin-bottom:8px;">Your cart is empty</p>
+    <p style="font-size:14px;color:var(--mu);margin-bottom:24px;">Add items from the menu to get started</p>
+    <button class="btn" onclick="go('s-food')">Browse food &amp; groceries →</button>
+  </div>
+  <div id="cart-items" style="background:var(--wh);border:.5px solid var(--bd);border-radius:var(--r);padding:0 16px;margin-bottom:14px;"></div>
+  <div id="cart-summary" class="card" style="margin-bottom:14px;">
+    <p class="slbl">Order summary</p>
+    <div class="pr"><span style="font-size:14px;color:var(--mu);">Items subtotal</span><span style="font-weight:700;" id="cart-subtotal">₦0</span></div>
+    <div class="pr"><span style="font-size:14px;color:var(--mu);">Delivery / errand fee</span><span style="font-weight:700;" id="cart-delivery">₦500</span></div>
+    <div class="pr"><span style="font-size:14px;color:var(--mu);">Platform fee</span><span style="font-weight:700;">₦500</span></div>
+    <div style="display:flex;justify-content:space-between;padding-top:10px;margin-top:6px;border-top:.5px solid var(--bd);"><span style="font-size:15px;font-weight:700;">Total</span><span style="font-size:18px;font-weight:700;color:var(--or);" id="cart-total">₦1,000</span></div>
+  </div>
+  <div class="card" style="margin-bottom:14px;">
+    <p class="slbl">Delivery address</p>
+    <input class="inp" placeholder="Enter your delivery address" style="margin-bottom:0;" value="14 Adeniyi Jones Ave, Ikeja"/>
+  </div>
+  <div class="i-gn" style="margin-bottom:14px;">🔒 Payment processed securely via Paystack. Funds held in escrow until you confirm delivery.</div>
+</div>
+<div style="position:absolute;bottom:0;left:0;right:0;padding:14px 16px;padding-bottom:max(var(--sb),14px);background:var(--wh);border-top:.5px solid var(--bd);">
+  <button class="btn" id="checkout-btn" onclick="go('s-payment')">Proceed to payment — <span id="cart-total-btn">₦1,000</span> →</button>
+</div>
+</div>
+
+<!-- PAYMENT (PAYSTACK) -->
+<div class="screen" id="s-payment">
+<div class="topbar"><button class="back" onclick="go('s-cart')">←</button><div class="ttl">Secure checkout</div></div>
+<div class="scroll" style="padding:20px 16px 100px;">
+
+  <!-- Paystack branding -->
+  <div style="background:var(--wh);border:.5px solid var(--bd);border-radius:var(--r);padding:20px;text-align:center;margin-bottom:20px;">
+    <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:4px;">
+      <svg style="width:28px;height:28px;" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="#00C3F7"/><text x="50" y="67" text-anchor="middle" style="font-size:52px;fill:#fff;font-weight:900;">P</text></svg>
+      <span style="font-size:22px;font-weight:900;color:#00C3F7;letter-spacing:-1px;">Paystack</span>
+    </div>
+    <p style="font-size:12px;color:var(--mu);">Secured by Paystack · PCI DSS Compliant</p>
+  </div>
+
+  <!-- Amount -->
+  <div class="dark" style="text-align:center;margin-bottom:20px;">
+    <p style="color:rgba(255,255,255,.5);font-size:13px;margin-bottom:6px;">Total to pay</p>
+    <p style="color:#fff;font-size:40px;font-weight:700;" id="pay-amount">₦5,500</p>
+    <p style="color:rgba(255,255,255,.4);font-size:12px;margin-top:4px;" id="pay-breakdown">Items ₦4,500 + Delivery ₦500 + Platform ₦500</p>
+  </div>
+
+  <!-- Email -->
+  <div style="margin-bottom:14px;">
+    <label class="lbl">Email address</label>
+    <input class="inp" value="chioma@gmail.com" type="email" placeholder="your@email.com"/>
+  </div>
+
+  <!-- Payment method -->
+  <p class="slbl">Payment method</p>
+  <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px;">
+    <div id="pm-card" onclick="selectPayMethod('card')" style="display:flex;align-items:center;gap:12px;padding:14px;background:var(--wh);border:2px solid var(--or);border-radius:var(--r);cursor:pointer;">
+      <div style="width:40px;height:40px;background:#F0F7FF;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">💳</div>
+      <div style="flex:1;"><p style="font-size:14px;font-weight:700;">Debit / Credit Card</p><p style="font-size:12px;color:var(--mu);">Visa, Mastercard, Verve</p></div>
+      <div id="pm-card-chk" style="width:22px;height:22px;border-radius:50%;background:var(--or);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;">✓</div>
+    </div>
+    <div id="pm-transfer" onclick="selectPayMethod('transfer')" style="display:flex;align-items:center;gap:12px;padding:14px;background:var(--wh);border:.5px solid var(--bd);border-radius:var(--r);cursor:pointer;">
+      <div style="width:40px;height:40px;background:var(--gb);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">🏦</div>
+      <div style="flex:1;"><p style="font-size:14px;font-weight:700;">Bank Transfer</p><p style="font-size:12px;color:var(--mu);">USSD or internet banking</p></div>
+      <div id="pm-transfer-chk" style="width:22px;height:22px;border-radius:50%;background:var(--bg);border:1.5px solid var(--bd);"></div>
+    </div>
+    <div id="pm-ussd" onclick="selectPayMethod('ussd')" style="display:flex;align-items:center;gap:12px;padding:14px;background:var(--wh);border:.5px solid var(--bd);border-radius:var(--r);cursor:pointer;">
+      <div style="width:40px;height:40px;background:var(--ab);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">📱</div>
+      <div style="flex:1;"><p style="font-size:14px;font-weight:700;">USSD</p><p style="font-size:12px;color:var(--mu);">*737#, *901#, *822# and more</p></div>
+      <div id="pm-ussd-chk" style="width:22px;height:22px;border-radius:50%;background:var(--bg);border:1.5px solid var(--bd);"></div>
+    </div>
+  </div>
+
+  <!-- Card form (shown when card selected) -->
+  <div id="card-form" style="margin-bottom:20px;">
+    <p class="slbl">Card details</p>
+    <div style="margin-bottom:10px;"><label class="lbl">Card number</label>
+      <div style="position:relative;"><input class="inp" value="5061 4604 1234 5678" placeholder="0000 0000 0000 0000" style="padding-right:50px;"/><span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:20px;">💳</span></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+      <div><label class="lbl">Expiry</label><input class="inp" value="09/27" placeholder="MM/YY"/></div>
+      <div><label class="lbl">CVV</label><input class="inp" value="***" type="password" maxlength="3" placeholder="123"/></div>
+    </div>
+    <div><label class="lbl">Cardholder name</label><input class="inp" value="Chioma Eze" placeholder="Name on card"/></div>
+  </div>
+
+  <!-- Transfer form (hidden) -->
+  <div id="transfer-form" style="display:none;margin-bottom:20px;">
+    <div style="background:var(--gb);border:.5px solid #B8E8CC;border-radius:var(--r);padding:18px;text-align:center;">
+      <p style="font-size:13px;color:var(--gn);font-weight:600;margin-bottom:10px;">Transfer to this account</p>
+      <p style="font-size:22px;font-weight:700;letter-spacing:2px;margin-bottom:4px;">0123 456 789</p>
+      <p style="font-size:14px;color:var(--mu);">Errandeck / Paystack · GTBank</p>
+      <p style="font-size:13px;color:var(--gn);margin-top:10px;font-weight:600;">Amount: <span id="transfer-amount">₦5,500</span></p>
+      <p style="font-size:11px;color:var(--mu);margin-top:6px;">This account expires in 30 minutes. Use the exact amount.</p>
+    </div>
+  </div>
+
+  <!-- USSD form (hidden) -->
+  <div id="ussd-form" style="display:none;margin-bottom:20px;">
+    <p class="slbl">Select your bank</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div onclick="dialUSSD('737')" style="padding:14px;background:var(--wh);border:.5px solid var(--bd);border-radius:var(--r);text-align:center;cursor:pointer;"><p style="font-size:20px;margin-bottom:4px;">🏦</p><p style="font-size:13px;font-weight:700;">GTBank</p><p style="font-size:12px;color:var(--or);font-weight:600;">*737#</p></div>
+      <div onclick="dialUSSD('901')" style="padding:14px;background:var(--wh);border:.5px solid var(--bd);border-radius:var(--r);text-align:center;cursor:pointer;"><p style="font-size:20px;margin-bottom:4px;">🏦</p><p style="font-size:13px;font-weight:700;">Access Bank</p><p style="font-size:12px;color:var(--or);font-weight:600;">*901#</p></div>
+      <div onclick="dialUSSD('822')" style="padding:14px;background:var(--wh);border:.5px solid var(--bd);border-radius:var(--r);text-align:center;cursor:pointer;"><p style="font-size:20px;margin-bottom:4px;">🏦</p><p style="font-size:13px;font-weight:700;">First Bank</p><p style="font-size:12px;color:var(--or);font-weight:600;">*822#</p></div>
+      <div onclick="dialUSSD('919')" style="padding:14px;background:var(--wh);border:.5px solid var(--bd);border-radius:var(--r);text-align:center;cursor:pointer;"><p style="font-size:20px;margin-bottom:4px;">🏦</p><p style="font-size:13px;font-weight:700;">Zenith Bank</p><p style="font-size:12px;color:var(--or);font-weight:600;">*966#</p></div>
+    </div>
+  </div>
+
+</div>
+<div style="position:absolute;bottom:0;left:0;right:0;padding:14px 16px;padding-bottom:max(var(--sb),14px);background:var(--wh);border-top:.5px solid var(--bd);">
+  <button class="btn" id="pay-btn" onclick="processPayment()">Pay <span id="pay-btn-amt">₦5,500</span> securely →</button>
+  <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:8px;">
+    <svg style="width:12px;height:12px;fill:var(--gn);" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    <span style="font-size:11px;color:var(--mu);">Secured by Paystack · SSL encrypted</span>
+  </div>
+</div>
+</div>
+
+<!-- PAYMENT SUCCESS -->
+<div class="screen" id="s-pay-success">
+<div class="scroll" style="padding:40px 20px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100%;">
+  <div style="width:80px;height:80px;border-radius:50%;background:var(--gb);display:flex;align-items:center;justify-content:center;margin-bottom:20px;font-size:40px;">✅</div>
+  <h2 style="font-size:24px;font-weight:700;margin-bottom:8px;text-align:center;">Payment successful!</h2>
+  <p style="font-size:14px;color:var(--mu);text-align:center;line-height:1.6;margin-bottom:6px;">Your order is confirmed. A Tasker has been assigned and will begin shortly.</p>
+  <p style="font-size:13px;color:var(--mu);text-align:center;margin-bottom:24px;" id="pay-ref">Ref: ERD-20260424-7821</p>
+  <div class="card" style="width:100%;margin-bottom:14px;">
+    <div class="pr"><span style="color:var(--mu);">Amount paid</span><span style="font-weight:700;color:var(--gn);" id="paid-amount">₦5,500</span></div>
+    <div class="pr"><span style="color:var(--mu);">Payment method</span><span style="font-weight:700;" id="paid-method">Debit card</span></div>
+    <div class="pr"><span style="color:var(--mu);">Status</span><span style="font-weight:700;color:var(--gn);">Escrowed 🔒</span></div>
+    <div class="pr"><span style="color:var(--mu);">Tasker</span><span style="font-weight:700;">Emeka O. ⭐</span></div>
+  </div>
+  <button class="btn" onclick="go('s-track')" style="margin-bottom:10px;width:100%;">Track your order →</button>
+  <button class="btn2" onclick="go('s-home')" style="width:100%;">Back to home</button>
+</div>
+</div>
+
+<!-- GENERAL ERRAND POST -->
+<div class="screen" id="s-general">
+<div class="topbar"><button class="back" onclick="go('s-home')">←</button><div><div class="ttl">General Errand</div><div style="font-size:11px;color:var(--hi);">Time-based · auto-calculated</div></div></div>
+<div class="scroll" style="padding:20px 16px 100px;">
+  <div class="i-or" style="margin-bottom:16px;"><b>Pricing:</b> ₦3,500 base (1hr) + ₦500 platform fee. Every extra 30 min = +₦1,000. Price auto-estimates from task details and locations.</div>
+  <div style="margin-bottom:14px;"><label class="lbl">What needs to be done?</label><input class="inp" id="gen-title" placeholder="e.g. Pick up documents from Lekki Phase 1" oninput="calcGeneral()"/></div>
+  <div style="margin-bottom:14px;"><label class="lbl">Full description</label><textarea class="inp" id="gen-desc" rows="4" style="resize:none;" placeholder="Addresses, instructions, items involved..." oninput="calcGeneral()"></textarea></div>
+  <div style="margin-bottom:14px;"><label class="lbl">📍 Starting location</label><input class="inp" id="gen-from" placeholder="Where should the Tasker begin?" oninput="calcGeneral()"/></div>
+  <div style="margin-bottom:14px;"><label class="lbl">🚩 End location</label><input class="inp" id="gen-to" placeholder="Where does the errand end?" oninput="calcGeneral()"/></div>
+  <div style="margin-bottom:16px;"><label class="lbl">🕐 Required by</label><input class="inp" type="datetime-local" id="gen-dl"/></div>
+  <div class="pcalc">
+    <p style="color:rgba(255,255,255,.5);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px;">Estimated price</p>
+    <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:12px;"><div class="pcalc-amt" id="gen-fee">₦3,500</div><div style="font-size:13px;color:rgba(255,255,255,.5);" id="gen-timelbl">~1 hour</div></div>
+    <div class="pcalc-row"><span style="color:rgba(255,255,255,.6);">Base rate (first hour)</span><span style="color:#fff;">₦3,500</span></div>
+    <div class="pcalc-row" id="gen-extra-row" style="display:none;"><span style="color:rgba(255,255,255,.6);" id="gen-extra-lbl">Extra time</span><span style="color:#fff;" id="gen-extra-val">₦0</span></div>
+    <div class="pcalc-row"><span style="color:rgba(255,255,255,.6);">Platform fee</span><span style="color:#fff;">₦500</span></div>
+    <div class="pcalc-row"><span style="color:#fff;font-weight:700;">You pay total</span><span style="color:var(--or);font-weight:700;" id="gen-total">₦4,000</span></div>
+  </div>
+</div>
+<div style="position:absolute;bottom:0;left:0;right:0;padding:14px 16px;padding-bottom:max(var(--sb),14px);background:var(--wh);border-top:.5px solid var(--bd);">
+  <button class="btn" onclick="go('s-payment')">Post errand — <span id="gen-btn-amt">₦4,000</span> →</button>
+</div>
+</div>
+
+<!-- DISPATCH -->
+<div class="screen" id="s-dispatch">
+<div class="topbar"><button class="back" onclick="go('s-home')">←</button><div><div class="ttl">Dispatch &amp; Delivery</div><div style="font-size:11px;color:var(--hi);">₦100 per kilometre</div></div></div>
+<div class="scroll" style="padding:20px 16px 100px;">
+  <div class="i-bl" style="margin-bottom:16px;"><b>Distance pricing:</b> ₦100/km from pickup to drop-off + ₦500 platform fee. Auto-estimates from addresses entered.</div>
+  <div style="margin-bottom:14px;"><label class="lbl">What are you sending?</label><input class="inp" placeholder="e.g. Documents, phone, clothing"/></div>
+  <div style="margin-bottom:14px;"><label class="lbl">📍 Pickup address</label><input class="inp" id="dis-from" placeholder="Where to collect from" oninput="calcDispatch()"/></div>
+  <div style="margin-bottom:14px;"><label class="lbl">🚩 Delivery address</label><input class="inp" id="dis-to" placeholder="Where to deliver to" oninput="calcDispatch()"/></div>
+  <div style="margin-bottom:14px;"><label class="lbl">Recipient name &amp; phone</label><input class="inp" placeholder="e.g. Tunde Adeyemi · 0801 234 5678"/></div>
+  <div style="margin-bottom:16px;"><label class="lbl">Package size</label>
+    <select class="inp" id="dis-size" onchange="calcDispatch()">
+      <option value="doc">Documents / envelope</option>
+      <option value="small">Small package under 5kg</option>
+      <option value="med">Medium 5–15kg (+₦500)</option>
+      <option value="lg">Large / bulky 15kg+ (+₦1,000)</option>
+    </select>
+  </div>
+  <div class="pcalc">
+    <p style="color:rgba(255,255,255,.5);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px;">Estimated cost</p>
+    <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:12px;"><div class="pcalc-amt" id="dis-fee">₦1,500</div><div style="font-size:13px;color:rgba(255,255,255,.5);" id="dis-kmlbl">~15 km</div></div>
+    <div class="pcalc-row"><span style="color:rgba(255,255,255,.6);" id="dis-km-row">Distance (15 km × ₦100)</span><span style="color:#fff;" id="dis-km-val">₦1,500</span></div>
+    <div class="pcalc-row"><span style="color:rgba(255,255,255,.6);">Package surcharge</span><span style="color:#fff;" id="dis-size-val">₦0</span></div>
+    <div class="pcalc-row"><span style="color:rgba(255,255,255,.6);">Platform fee</span><span style="color:#fff;">₦500</span></div>
+    <div class="pcalc-row"><span style="color:#fff;font-weight:700;">You pay total</span><span style="color:var(--or);font-weight:700;" id="dis-total">₦2,000</span></div>
+  </div>
+</div>
+<div style="position:absolute;bottom:0;left:0;right:0;padding:14px 16px;padding-bottom:max(var(--sb),14px);background:var(--wh);border-top:.5px solid var(--bd);">
+  <button class="btn" onclick="go('s-payment')">Post dispatch — <span id="dis-btn-amt">₦2,000</span> →</button>
+</div>
+</div>
+
+<!-- ARTISAN -->
+<div class="screen" id="s-artisan">
+<div class="topbar"><button class="back" onclick="go('s-home')">←</button><div><div class="ttl">Artisan &amp; Home Services</div><div style="font-size:11px;color:var(--hi);">Verified artisans on Errandeck</div></div></div>
+<div class="scroll" style="padding:20px 16px 100px;">
+  <div class="i-pu" style="margin-bottom:16px;">All artisans are verified, trained, and onboarded directly on Errandeck. Full tracking and escrow payment.</div>
+  <p class="slbl">Select service type</p>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;">
+    <div id="art-cleaning" onclick="pickArtisan('cleaning')" style="padding:14px;background:var(--or);color:#fff;border-radius:var(--r);text-align:center;cursor:pointer;border:2px solid var(--or);"><div style="font-size:26px;margin-bottom:5px;">🧹</div><p style="font-size:13px;font-weight:700;">Home Cleaning</p></div>
+    <div id="art-plumbing" onclick="pickArtisan('plumbing')" style="padding:14px;background:var(--bg);color:var(--mu);border-radius:var(--r);text-align:center;cursor:pointer;border:1.5px solid var(--bd);"><div style="font-size:26px;margin-bottom:5px;">🔧</div><p style="font-size:13px;font-weight:700;">Plumbing</p></div>
+    <div id="art-electrical" onclick="pickArtisan('electrical')" style="padding:14px;background:var(--bg);color:var(--mu);border-radius:var(--r);text-align:center;cursor:pointer;border:1.5px solid var(--bd);"><div style="font-size:26px;margin-bottom:5px;">⚡</div><p style="font-size:13px;font-weight:700;">Electrical</p></div>
+    <div id="art-ac" onclick="pickArtisan('ac')" style="padding:14px;background:var(--bg);color:var(--mu);border-radius:var(--r);text-align:center;cursor:pointer;border:1.5px solid var(--bd);"><div style="font-size:26px;margin-bottom:5px;">❄️</div><p style="font-size:13px;font-weight:700;">AC Repair</p></div>
+    <div id="art-painting" onclick="pickArtisan('painting')" style="padding:14px;background:var(--bg);color:var(--mu);border-radius:var(--r);text-align:center;cursor:pointer;border:1.5px solid var(--bd);"><div style="font-size:26px;margin-bottom:5px;">🎨</div><p style="font-size:13px;font-weight:700;">Painting</p></div>
+    <div id="art-other" onclick="pickArtisan('other')" style="padding:14px;background:var(--bg);color:var(--mu);border-radius:var(--r);text-align:center;cursor:pointer;border:1.5px solid var(--bd);"><div style="font-size:26px;margin-bottom:5px;">✨</div><p style="font-size:13px;font-weight:700;">Other</p></div>
+  </div>
+  <div style="margin-bottom:14px;"><label class="lbl">Describe the job</label><textarea class="inp" rows="4" style="resize:none;" placeholder="e.g. Clean 3-bedroom flat, fix leaking kitchen pipe..."></textarea></div>
+  <div style="margin-bottom:14px;"><label class="lbl">📍 Your address</label><input class="inp" placeholder="Where should the artisan come?"/></div>
+  <div style="margin-bottom:16px;"><label class="lbl">🕐 Preferred date &amp; time</label><input class="inp" type="datetime-local"/></div>
+  <p class="slbl">Available artisans near you</p>
+  <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">
+    <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--wh);border:.5px solid var(--bd);border-radius:var(--r);">
+      <div style="width:44px;height:44px;border-radius:50%;background:var(--pb);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:var(--pu);flex-shrink:0;">AK</div>
+      <div style="flex:1;"><div style="display:flex;align-items:center;gap:6px;"><p style="font-size:14px;font-weight:600;">Adebayo Kayode</p><span class="pro-badge">⭐ Pro</span></div><p style="font-size:12px;color:var(--mu);">🧹 Home Cleaning · 4.9★ · 89 jobs</p></div>
+      <span style="font-size:11px;color:var(--gn);font-weight:700;background:var(--gb);padding:3px 8px;border-radius:8px;">Available</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--wh);border:.5px solid var(--bd);border-radius:var(--r);">
+      <div style="width:44px;height:44px;border-radius:50%;background:var(--pb);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:var(--pu);flex-shrink:0;">MO</div>
+      <div style="flex:1;"><p style="font-size:14px;font-weight:600;">Musa Owolabi</p><p style="font-size:12px;color:var(--mu);">🔧 Plumber · 4.8★ · 62 jobs</p></div>
+      <span style="font-size:11px;color:var(--gn);font-weight:700;background:var(--gb);padding:3px 8px;border-radius:8px;">Available</span>
+    </div>
+  </div>
+</div>
+<div style="position:absolute;bottom:0;left:0;right:0;padding:14px 16px;padding-bottom:max(var(--sb),14px);background:var(--wh);border-top:.5px solid var(--bd);">
+  <button class="btn" onclick="go('s-payment')">Request artisan →</button>
+</div>
+</div>
+
+<!-- TRACKING (abbreviated from previous version) -->
+<div class="screen" id="s-track">
+<div class="topbar"><button class="back" onclick="go('s-home')">←</button><div style="flex:1;min-width:0;"><div class="ttl" style="font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Pick up documents — Lekki Phase 1</div><div style="display:flex;align-items:center;gap:6px;margin-top:2px;"><span class="badge" style="background:var(--ab);color:var(--am);">In progress</span><span class="chip c-or" style="font-size:9px;">🏃 General</span></div></div></div>
+<div style="padding:12px 16px;flex-shrink:0;"><div class="tabs"><button class="tbtn on" id="tt1" onclick="trackTab(1)">📍 Tracking</button><button class="tbtn" id="tt2" onclick="trackTab(2)">💬 Chat</button></div></div>
+<div id="track-panel" class="scroll" style="padding:0 16px 20px;">
+  <div class="card" style="margin-bottom:12px;display:flex;align-items:center;gap:12px;">
+    <div style="width:46px;height:46px;border-radius:50%;background:rgba(255,107,26,.15);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:var(--or);flex-shrink:0;">EO</div>
+    <div style="flex:1;"><div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;"><p style="font-size:15px;font-weight:700;">Emeka Okonkwo</p><span class="pro-badge">⭐ Pro</span></div><p style="font-size:11px;color:var(--mu);">★★★★★ 4.9 · 143 tasks · Verified ✓</p></div>
+    <button onclick="trackTab(2)" style="padding:9px 14px;background:var(--or);color:#fff;border:none;border-radius:var(--rs);font-size:13px;font-weight:700;cursor:pointer;">Chat</button>
+  </div>
+  <div class="card" style="margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;">
+    <div><p style="font-size:12px;color:var(--mu);margin-bottom:2px;">Charged</p><p style="font-size:20px;font-weight:700;color:var(--or);">₦4,500</p></div>
+    <div style="text-align:center;"><p style="font-size:12px;color:var(--mu);margin-bottom:2px;">Duration</p><p style="font-size:15px;font-weight:600;">~1.5 hrs</p></div>
+    <div style="text-align:right;"><p style="font-size:12px;color:var(--mu);margin-bottom:2px;">Escrow</p><p style="font-size:13px;font-weight:700;color:var(--gn);">🔒 Held</p></div>
+  </div>
+  <div class="card" style="margin-bottom:12px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><p style="font-size:13px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;">Progress</p><span style="font-size:13px;font-weight:700;color:var(--or);" id="ms-count">3 / 6 steps</span></div>
+    <div class="pbar" style="height:7px;margin-bottom:16px;"><div class="pfill" id="ms-prog" style="width:50%"></div></div>
+    <div id="ms-container"></div>
+  </div>
+  <div style="height:130px;margin-bottom:12px;border-radius:var(--r);overflow:hidden;position:relative;cursor:pointer;" onclick="go('s-map')">
+    <svg viewBox="0 0 343 130" width="100%" height="130" style="display:block;"><rect width="343" height="130" fill="#e8ead8"/><rect x="10" y="10" width="55" height="38" rx="3" fill="#d4d8c8"/><rect x="75" y="10" width="80" height="38" rx="3" fill="#d4d8c8"/><rect x="165" y="10" width="70" height="38" rx="3" fill="#d4d8c8"/><rect x="245" y="10" width="80" height="38" rx="3" fill="#d4d8c8"/><rect x="10" y="58" width="55" height="42" rx="3" fill="#d4d8c8"/><rect x="75" y="58" width="80" height="42" rx="3" fill="#c8ddb8"/><rect x="165" y="58" width="70" height="42" rx="3" fill="#d4d8c8"/><line x1="0" y1="53" x2="343" y2="53" stroke="#fff" stroke-width="6"/><line x1="68" y1="0" x2="68" y2="130" stroke="#fff" stroke-width="4"/><line x1="160" y1="0" x2="160" y2="130" stroke="#fff" stroke-width="7"/><line x1="242" y1="0" x2="242" y2="130" stroke="#fff" stroke-width="4"/><polyline points="44,118 44,53 160,53 242,53" stroke="#4285F4" stroke-width="4" fill="none" stroke-linecap="round"/><circle cx="44" cy="118" r="7" fill="var(--or)"/><circle cx="44" cy="118" r="3" fill="#fff"/><ellipse cx="242" cy="50" rx="10" ry="12" fill="#EA4335"/><ellipse cx="242" cy="47" rx="4" ry="4" fill="#fff"/></svg>
+    <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;"><span style="color:#fff;font-size:13px;font-weight:700;background:rgba(0,0,0,.55);padding:7px 16px;border-radius:20px;">Open navigation map</span></div>
+  </div>
+  <button class="btn" id="confirm-btn" style="display:none;margin-bottom:10px;" onclick="confirmComplete()">Confirm task complete ✅</button>
+  <button id="sim-btn" onclick="advanceMilestone()" style="width:100%;padding:14px;background:var(--bg);color:var(--mu);border:.5px solid var(--bd);border-radius:var(--r);font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">Simulate next milestone →</button>
+</div>
+<div id="chat-panel" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
+  <div id="chat-msgs" class="scroll" style="padding:14px 16px;display:flex;flex-direction:column;gap:10px;">
+    <div style="display:flex;flex-direction:column;align-items:flex-start;"><p style="font-size:10px;color:var(--hi);margin-bottom:4px;">Emeka</p><div class="bt">Hi! Heading to Lekki Phase 1 now.</div><p class="ct">2:10 PM</p></div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;"><div class="bm">12B Admiralty Way. Security will give documents.</div><p class="ct" style="text-align:right;">2:11 PM</p></div>
+    <div style="display:flex;flex-direction:column;align-items:flex-start;"><p style="font-size:10px;color:var(--hi);margin-bottom:4px;">Emeka</p><div class="bt">Got it! At the gate now 👍</div><p class="ct">2:28 PM</p></div>
+  </div>
+  <div style="padding:10px 16px;padding-bottom:max(var(--sb),10px);background:var(--wh);border-top:.5px solid var(--bd);display:flex;gap:10px;flex-shrink:0;">
+    <input class="inp" id="chat-input" style="flex:1;padding:11px 14px;" placeholder="Type a message..." onkeydown="if(event.key==='Enter')sendChatMsg()"/>
+    <button onclick="sendChatMsg()" style="width:44px;height:44px;background:var(--or);border:none;border-radius:var(--rs);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg style="width:18px;height:18px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
+  </div>
+</div>
+</div>
+
+<!-- TASKER FEED -->
+<div class="screen" id="s-feed">
+<div class="topbar" style="justify-content:space-between;"><div><div style="font-size:12px;color:var(--mu);margin-bottom:2px;">📍 Near Ikeja, Lagos</div><div class="ttl">Errands available <span style="font-size:14px;font-weight:400;color:var(--mu);">(8)</span></div></div><div style="display:flex;align-items:center;gap:6px;background:var(--gb);padding:6px 12px;border-radius:20px;cursor:pointer;"><div style="width:7px;height:7px;background:var(--gn);border-radius:50%;"></div><span style="font-size:12px;font-weight:700;color:var(--gn);">Online</span></div></div>
+<div style="background:var(--gb2);border-bottom:.5px solid rgba(184,134,11,.2);padding:8px 16px;display:flex;align-items:center;gap:8px;flex-shrink:0;"><span style="font-size:14px;">⭐</span><p style="font-size:12px;font-weight:700;color:var(--go);flex:1;">Pro Tasker · Priority placement active</p><span style="font-size:11px;color:var(--go);cursor:pointer;" onclick="go('s-pro')">Details →</span></div>
+<div style="padding:10px 16px 8px;background:var(--wh);border-bottom:.5px solid var(--bd);flex-shrink:0;"><div class="pills"><div class="pill on">🔥 All</div><div class="pill">🏃 General</div><div class="pill">🍱 Food</div><div class="pill">🛵 Dispatch</div><div class="pill">🔧 Artisan</div></div></div>
+<div class="scroll" style="padding:14px 16px 16px;">
+  <div class="trow" style="border-left:3px solid var(--or);" onclick="go('s-tasker-task')"><div style="width:46px;height:46px;border-radius:var(--rs);background:#FFF0EB;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">🏃</div><div style="flex:1;min-width:0;"><div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:3px;"><p style="font-size:14px;font-weight:700;flex:1;min-width:0;">Pick up documents — Lekki Phase 1</p><span class="earn-tag">₦3,360</span></div><div style="margin-bottom:4px;"><span class="chip c-or" style="font-size:10px;">🏃 General · ~1.5hr</span></div><p style="font-size:12px;color:var(--mu);">📍 Lekki Phase 1 · 4.2km · Due 3:00 PM</p></div></div>
+  <div class="trow" onclick="go('s-tasker-task')"><div style="width:46px;height:46px;border-radius:var(--rs);background:#FFF0F0;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">🍱</div><div style="flex:1;min-width:0;"><div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:3px;"><p style="font-size:14px;font-weight:700;flex:1;min-width:0;">Food pickup — restaurant, GRA Ikeja</p><span class="earn-tag">₦400</span></div><div style="margin-bottom:4px;"><span class="chip c-rd" style="font-size:10px;">🍱 Food pickup · flat ₦500</span></div><p style="font-size:12px;color:var(--mu);">📍 GRA Ikeja · 1.8km · Due 1:30 PM</p></div></div>
+  <div class="trow" onclick="go('s-tasker-task')"><div style="width:46px;height:46px;border-radius:var(--rs);background:var(--bb);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">🛵</div><div style="flex:1;min-width:0;"><div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:3px;"><p style="font-size:14px;font-weight:700;flex:1;min-width:0;">Deliver parcel — Maryland to Victoria Island</p><span class="earn-tag">₦3,200</span></div><div style="margin-bottom:4px;"><span class="chip c-bl" style="font-size:10px;">🛵 Dispatch · 40km</span></div><p style="font-size:12px;color:var(--mu);">📍 Maryland → VI · Due 4:00 PM</p></div></div>
+  <div class="trow" onclick="go('s-tasker-task')"><div style="width:46px;height:46px;border-radius:var(--rs);background:var(--pb);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">🔧</div><div style="flex:1;min-width:0;"><div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:3px;"><p style="font-size:14px;font-weight:700;flex:1;min-width:0;">Fix leaking kitchen pipe — Surulere</p><span class="earn-tag">₦6,400</span></div><div style="margin-bottom:4px;"><span class="chip c-pu" style="font-size:10px;">🔧 Artisan · Plumbing</span></div><p style="font-size:12px;color:var(--mu);">📍 Surulere · 3.2km · Preferred: Today 4PM</p></div></div>
+</div>
+<div class="bnav"><button class="ntab on"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg><span>Feed</span></button><button class="ntab" onclick="go('s-tasker-task')"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg><span>Active</span></button><button class="ntab" onclick="go('s-pro')"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><span>Pro</span></button><button class="ntab" onclick="go('s-earnings')"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span>Earnings</span></button></div>
+</div>
+
+<!-- TASKER ACTIVE TASK -->
+<div class="screen" id="s-tasker-task">
+<div class="topbar"><button class="back" onclick="go('s-feed')">←</button><div style="flex:1;min-width:0;"><div class="ttl" style="font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Documents — Lekki Phase 1</div><div style="display:flex;gap:6px;margin-top:2px;"><span class="chip c-or" style="font-size:10px;">🏃 General</span><span class="pro-badge" style="font-size:10px;">⭐ Pro</span></div></div></div>
+<div class="scroll" style="padding:16px 16px 20px;">
+  <div class="dark" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;"><div><p style="color:rgba(255,255,255,.5);font-size:12px;margin-bottom:4px;">You take home</p><p style="color:#fff;font-size:30px;font-weight:700;">₦3,360</p><p style="color:rgba(255,255,255,.35);font-size:11px;margin-top:2px;">₦4,200 − 20% · ⚡ Pro: 2hr payout</p></div><div style="text-align:right;"><p style="color:rgba(255,255,255,.5);font-size:12px;">Duration</p><p style="color:#fff;font-size:15px;font-weight:600;">~1.5 hrs</p></div></div>
+  <button onclick="go('s-map')" style="width:100%;padding:14px;background:var(--bl);color:#fff;border:none;border-radius:var(--r);font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:14px;font-family:inherit;"><svg style="width:20px;height:20px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>Navigate — Lekki Phase 1 (4.2 km)</button>
+  <div class="card" style="margin-bottom:12px;"><p class="slbl">Task description</p><p style="font-size:14px;line-height:1.6;">Pick up signed legal documents from 12B Admiralty Way, Lekki Phase 1. Security at gate will hand over. Deliver to 5 Ozumba Mbadiwe Ave, Victoria Island.</p></div>
+  <div class="card" style="margin-bottom:14px;">
+    <p class="slbl">Mark milestone</p>
+    <p style="font-size:14px;font-weight:700;margin-bottom:12px;">Step <span id="tk-step">3</span>/6: <span style="color:var(--or);" id="tk-label">En route to pickup</span></p>
+    <div id="tk-photo" onclick="taskPhotoSim()" style="border:1.5px dashed var(--bd);border-radius:var(--rs);padding:18px;text-align:center;cursor:pointer;margin-bottom:12px;"><div style="font-size:24px;margin-bottom:5px;">📷</div><p style="font-size:13px;color:var(--mu);">Add photo proof (optional)</p></div>
+    <button class="btn" id="tk-advance" onclick="taskerAdvance()">Mark step done ✓</button>
+  </div>
+</div>
+</div>
+
+<!-- MAP -->
+<div class="screen" id="s-map">
+<div style="background:var(--wh);padding:max(var(--st),12px) 16px 12px;display:flex;align-items:center;gap:10px;border-bottom:.5px solid var(--bd);flex-shrink:0;">
+  <button class="back" onclick="go('s-tasker-task')">←</button>
+  <div style="flex:1;background:var(--bg);border-radius:20px;padding:9px 16px;"><p style="font-size:13px;font-weight:700;">To: 12B Admiralty Way, Lekki Phase 1</p><p style="font-size:11px;color:var(--mu);">4.2 km · ~18 min</p></div>
+</div>
+<div class="navbar"><div class="navbox"><svg id="turn-icon" style="width:20px;height:20px;fill:none;stroke:#fff;stroke-width:2.5;stroke-linecap:round;" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg></div><div style="flex:1;"><p style="color:#fff;font-size:14px;font-weight:700;" id="nav-instruction">Head south on Awolowo Road</p><p style="color:rgba(255,255,255,.65);font-size:12px;" id="nav-sub">Continue 500 m</p></div><div style="text-align:right;"><p style="color:#fff;font-size:16px;font-weight:700;" id="nav-eta">18 min</p></div></div>
+<div style="flex:1;position:relative;margin:10px 16px 0;border-radius:var(--r);overflow:hidden;">
+  <svg viewBox="0 0 343 240" width="100%" height="100%" style="display:block;background:#e8ead8;">
+    <rect width="343" height="240" fill="#e8ead8"/>
+    <rect x="10" y="10" width="55" height="45" rx="3" fill="#d4d8c8"/><rect x="75" y="10" width="78" height="45" rx="3" fill="#d4d8c8"/><rect x="163" y="10" width="74" height="45" rx="3" fill="#d4d8c8"/><rect x="247" y="10" width="80" height="45" rx="3" fill="#d4d8c8"/>
+    <rect x="10" y="67" width="55" height="70" rx="3" fill="#d4d8c8"/><rect x="75" y="67" width="78" height="70" rx="3" fill="#c8ddb8"/><rect x="163" y="67" width="74" height="70" rx="3" fill="#d4d8c8"/><rect x="247" y="67" width="80" height="70" rx="3" fill="#d4d8c8"/>
+    <rect x="10" y="149" width="317" height="80" rx="3" fill="#d4d8c8"/>
+    <line x1="0" y1="61" x2="343" y2="61" stroke="#fff" stroke-width="8"/>
+    <line x1="0" y1="144" x2="343" y2="144" stroke="#fff" stroke-width="8"/>
+    <line x1="67" y1="0" x2="67" y2="240" stroke="#fff" stroke-width="6"/>
+    <line x1="155" y1="0" x2="155" y2="240" stroke="#fff" stroke-width="8"/>
+    <line x1="241" y1="0" x2="241" y2="240" stroke="#fff" stroke-width="6"/>
+    <polyline points="36,220 36,144 36,61 155,61 241,61" stroke="#4285F4" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <g id="tasker-marker"><circle cx="36" cy="220" r="14" fill="#4285F4" fill-opacity=".15"/><circle cx="36" cy="220" r="10" fill="#4285F4"/><circle cx="36" cy="220" r="5" fill="#fff"/></g>
+    <ellipse cx="241" cy="57" rx="13" ry="17" fill="var(--or)"/><ellipse cx="241" cy="53" rx="5.5" ry="5.5" fill="#fff"/><polygon points="241,74 235,61 247,61" fill="var(--or)"/>
+    <rect x="248" y="38" width="72" height="20" rx="5" fill="var(--or)" fill-opacity=".9"/><text x="284" y="52" text-anchor="middle" style="font-size:9px;fill:#fff;font-weight:700;">Lekki Phase 1</text>
+  </svg>
+</div>
+<div style="background:var(--wh);border-radius:20px 20px 0 0;padding:14px 16px;flex-shrink:0;margin-top:10px;border-top:.5px solid var(--bd);">
+  <div style="width:36px;height:4px;background:var(--bd);border-radius:2px;margin:0 auto 12px;"></div>
+  <div style="height:4px;background:var(--bg);border-radius:2px;overflow:hidden;margin-bottom:12px;"><div class="pfill" id="nav-progress" style="width:30%;"></div></div>
+  <div class="eta-strip"><div class="eta-seg"><div style="font-size:17px;font-weight:700;" id="nav-dist">2.7 km</div><div style="font-size:10px;color:var(--mu);">Distance</div></div><div class="eta-seg"><div style="font-size:17px;font-weight:700;color:var(--or);" id="nav-time">11 min</div><div style="font-size:10px;color:var(--mu);">ETA</div></div><div class="eta-seg"><div style="font-size:17px;font-weight:700;color:#D97706;">Moderate</div><div style="font-size:10px;color:var(--mu);">Traffic</div></div></div>
+  <div style="display:flex;gap:10px;">
+    <button onclick="simDrive()" id="drive-btn" style="flex:1;padding:13px;background:var(--or);color:#fff;border:none;border-radius:var(--rs);font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">Simulate drive →</button>
+    <button onclick="window.open('https://www.google.com/maps/search/?api=1&query=12B+Admiralty+Way+Lekki+Phase+1+Lagos','_blank')" style="padding:13px 14px;background:var(--bb);color:var(--bl);border:.5px solid #B5D4F4;border-radius:var(--rs);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">Google Maps</button>
+  </div>
+</div>
+</div>
+
+<!-- PRO TASKER -->
+<div class="screen" id="s-pro">
+<div class="topbar"><button class="back" onclick="go('s-feed')">←</button><div class="ttl">Errandeck Pro</div></div>
+<div class="scroll" style="padding:20px 16px 32px;">
+  <div style="background:var(--bk);border-radius:var(--r);padding:24px;text-align:center;margin-bottom:20px;"><div style="font-size:48px;margin-bottom:12px;">⭐</div><h2 style="color:#fff;font-size:22px;font-weight:700;margin-bottom:8px;">Errandeck Pro Tasker</h2><p style="color:rgba(255,255,255,.55);font-size:14px;line-height:1.6;">The highest tier. Earned through excellence.</p><div style="display:inline-block;background:var(--gb2);border:.5px solid rgba(184,134,11,.4);border-radius:20px;padding:6px 16px;margin-top:12px;"><span style="font-size:13px;font-weight:700;color:var(--go);">Emeka Okonkwo — Active Pro</span></div></div>
+  <div class="sg" style="margin-bottom:20px;"><div class="sc"><p style="font-size:22px;font-weight:700;color:var(--or);">4.9 ⭐</p><p style="font-size:11px;color:var(--mu);margin-top:3px;">Rating</p></div><div class="sc"><p style="font-size:22px;font-weight:700;color:var(--or);">143</p><p style="font-size:11px;color:var(--mu);margin-top:3px;">Tasks done</p></div><div class="sc"><p style="font-size:22px;font-weight:700;color:var(--gn);">98%</p><p style="font-size:11px;color:var(--mu);margin-top:3px;">Completion</p></div><div class="sc"><p style="font-size:22px;font-weight:700;color:var(--or);">2 hrs</p><p style="font-size:11px;color:var(--mu);margin-top:3px;">Payout time</p></div></div>
+  <p class="slbl">Benefits</p>
+  <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;"><div class="card" style="display:flex;gap:12px;border-left:3px solid var(--go);"><span style="font-size:22px;flex-shrink:0;">🎯</span><div><p style="font-size:14px;font-weight:700;margin-bottom:3px;">Priority feed placement</p><p style="font-size:13px;color:var(--mu);">First access to every new errand in your area.</p></div></div><div class="card" style="display:flex;gap:12px;border-left:3px solid var(--go);"><span style="font-size:22px;flex-shrink:0;">⚡</span><div><p style="font-size:14px;font-weight:700;margin-bottom:3px;">2-hour payouts</p><p style="font-size:13px;color:var(--mu);">Paid within 2 hours of task confirmation.</p></div></div></div>
+  <p class="slbl">Requirements</p>
+  <div class="card"><div class="pr"><span>Minimum rating</span><span style="font-weight:700;color:var(--gn);">4.5★ or above</span></div><div class="pr"><span>Completion rate</span><span style="font-weight:700;color:var(--gn);">90%+</span></div><div class="pr"><span>Tasks completed</span><span style="font-weight:700;color:var(--gn);">50+ all-time</span></div></div>
+</div>
+</div>
+
+<!-- TASKER EARNINGS -->
+<div class="screen" id="s-earnings">
+<div class="topbar" style="justify-content:space-between;"><div class="ttl">Earnings</div><span class="pro-badge">⭐ Pro</span></div>
+<div class="scroll" style="padding:16px;">
+  <div style="background:var(--bk);border-radius:var(--r);padding:22px;text-align:center;margin-bottom:14px;"><p style="color:rgba(255,255,255,.5);font-size:12px;margin-bottom:4px;">Available balance</p><p style="color:#fff;font-size:36px;font-weight:700;" id="earn-balance">₦14,000.00</p><p style="color:rgba(255,255,255,.4);font-size:11px;margin-top:3px;">⚡ Pro: paid within 2 hrs</p><button onclick="doWithdraw()" style="margin-top:14px;padding:11px 28px;background:var(--or);color:#fff;border:none;border-radius:var(--rs);font-size:14px;font-weight:700;cursor:pointer;" id="wd-btn">Withdraw to GTBank</button></div>
+  <div class="sg" style="margin-bottom:14px;"><div class="sc"><p style="font-size:20px;font-weight:700;color:var(--gn);">₦84,000</p><p style="font-size:11px;color:var(--mu);margin-top:3px;">Total earned</p></div><div class="sc"><p style="font-size:20px;font-weight:700;color:var(--bl);">₦70,000</p><p style="font-size:11px;color:var(--mu);margin-top:3px;">Withdrawn</p></div><div class="sc"><p style="font-size:20px;font-weight:700;">38</p><p style="font-size:11px;color:var(--mu);margin-top:3px;">Tasks done</p></div><div class="sc"><p style="font-size:20px;font-weight:700;">4.9 ⭐</p><p style="font-size:11px;color:var(--mu);margin-top:3px;">Rating</p></div></div>
+  <div class="card" style="margin-bottom:14px;display:flex;align-items:center;gap:12px;"><div style="width:40px;height:40px;background:var(--bg);border-radius:var(--rs);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">🏦</div><div style="flex:1;"><p style="font-size:14px;font-weight:600;">GTBank</p><p style="font-size:12px;color:var(--mu);">****7821</p></div><span style="font-size:13px;color:var(--or);font-weight:600;cursor:pointer;">Change</span></div>
+  <p class="slbl">Recent earnings</p>
+  <div style="display:flex;flex-direction:column;gap:8px;padding-bottom:20px;">
+    <div class="card" style="display:flex;align-items:center;gap:10px;"><div style="width:40px;height:40px;border-radius:var(--rs);background:#FFF0EB;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🏃</div><div style="flex:1;"><p style="font-size:14px;font-weight:600;">Document pickup — Lekki</p><p style="font-size:11px;color:var(--mu);">General · 1.5hr · Today</p></div><p style="font-size:15px;font-weight:700;color:var(--gn);">+₦3,360</p></div>
+    <div class="card" style="display:flex;align-items:center;gap:10px;"><div style="width:40px;height:40px;border-radius:var(--rs);background:var(--bb);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🛵</div><div style="flex:1;"><p style="font-size:14px;font-weight:600;">Dispatch — Maryland to VI</p><p style="font-size:11px;color:var(--mu);">Dispatch · 40km · Yesterday</p></div><p style="font-size:15px;font-weight:700;color:var(--gn);">+₦3,200</p></div>
+    <div class="card" style="display:flex;align-items:center;gap:10px;"><div style="width:40px;height:40px;border-radius:var(--rs);background:var(--pb);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🔧</div><div style="flex:1;"><p style="font-size:14px;font-weight:600;">Plumbing job — Surulere</p><p style="font-size:11px;color:var(--mu);">Artisan · 3 days ago</p></div><p style="font-size:15px;font-weight:700;color:var(--gn);">+₦6,400</p></div>
+  </div>
+</div>
+<div class="bnav"><button class="ntab" onclick="go('s-feed')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg><span>Feed</span></button><button class="ntab" onclick="go('s-tasker-task')"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg><span>Active</span></button><button class="ntab" onclick="go('s-pro')"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><span>Pro</span></button><button class="ntab on"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span>Earnings</span></button></div>
+</div>
+
+</div><!-- end #app -->
+<script>
+// ── STATE ─────────────────────────────────────────────
+let appRole='client', msStep=3, tkStep=3, navStep=0, navInterval=null;
+let cart=[], selectedPayMethod='card';
+const chatReplies=['Got it!','On my way!','Sure thing!','Understood!','Almost there!'];
+const msData=[
+  {l:'Task accepted by Tasker',done:true},
+  {l:'Tasker en route to pickup',done:true},
+  {l:'Arrived at Lekki Phase 1',done:true},
+  {l:'Documents collected from security',done:false,act:true},
+  {l:'En route to Victoria Island',done:false},
+  {l:'Delivered — awaiting your confirmation',done:false}
+];
+const tkLabels=['Documents collected','En route to Victoria Island','Delivered — awaiting confirmation','All done!'];
+const navSteps=[
+  {t:'Head south on Awolowo Road',s:'Continue 500 m',e:'18 min',d:'4.2 km',tm:'18 min',p:15},
+  {t:'Turn left onto Ozumba Mbadiwe Ave',s:'In 300 m, turn left',e:'14 min',d:'3.1 km',tm:'14 min',p:32,left:true},
+  {t:'Continue on Ozumba Mbadiwe Avenue',s:'Continue 1.5 km',e:'10 min',d:'2.2 km',tm:'10 min',p:50},
+  {t:'Turn right toward Lekki Phase 1',s:'In 400 m, turn right',e:'6 min',d:'1.2 km',tm:'6 min',p:72,right:true},
+  {t:'Arrived at 12B Admiralty Way',s:'Destination on your right',e:'Arrived',d:'0 km',tm:'Arrived',p:100}
+];
+
+// ── NAVIGATION ────────────────────────────────────────
+function go(id){
+  const cur=document.querySelector('.screen.active');
+  const nxt=document.getElementById(id);
+  if(!nxt||cur===nxt)return;
+  cur.classList.remove('active');
+  nxt.classList.add('active','slide');
+  setTimeout(()=>nxt.classList.remove('slide'),300);
+  nxt.querySelectorAll('.scroll').forEach(e=>e.scrollTop=0);
+  if(id==='s-cart')renderCart();
+  if(id==='s-payment')syncPaymentAmount();
+}
+
+// ── LOGIN ─────────────────────────────────────────────
+function pickRole(r){
+  appRole=r;
+  ['client','tasker'].forEach(x=>{
+    const el=document.getElementById('role-'+x);
+    const sel=r===x;
+    el.className='role-card'+(sel?' sel':'');
+    el.querySelector('div:nth-child(2)').style.color=sel?'var(--or)':'var(--mu)';
+  });
+}
+function goOTP(){
+  const p=document.getElementById('login-ph').value||'0801234567';
+  document.getElementById('otp-num').textContent='+234 '+p.slice(0,4)+' ***';
+  go('s-otp');
+  setTimeout(()=>document.getElementById('o0').focus(),300);
+}
+function otpKey(i,el){
+  if(el.value&&i<5)document.getElementById('o'+(i+1)).focus();
+  const all=[0,1,2,3,4,5].map(n=>document.getElementById('o'+n).value);
+  document.getElementById('otp-btn').disabled=!all.every(v=>v.trim());
+}
+function verifyOTP(){go(appRole==='tasker'?'s-feed':'s-home');}
+
+// ── CART ──────────────────────────────────────────────
+function addToCart(name,price,btn){
+  const existing=cart.find(i=>i.name===name);
+  if(existing){existing.qty++;existing.total+=price;}
+  else cart.push({name,price,qty:1,total:price});
+  const badge=document.getElementById('cart-badge');
+  const badge2=document.getElementById('cart-badge2');
+  const total=cart.reduce((s,i)=>s+i.qty,0);
+  if(badge)badge.textContent=total;
+  if(badge2)badge2.textContent=total;
+  // Flash button
+  const orig=btn.textContent;
+  btn.textContent='✓';btn.style.background='var(--gn)';btn.style.borderColor='var(--gn)';btn.style.color='#fff';
+  setTimeout(()=>{btn.textContent=orig;btn.style.background='var(--or)';btn.style.borderColor='var(--or)';btn.style.color='#fff';btn.className='qty-btn plus';},800);
+  btn.className='qty-btn plus';
+}
+function renderCart(){
+  const empty=document.getElementById('cart-empty');
+  const items=document.getElementById('cart-items');
+  const summary=document.getElementById('cart-summary');
+  if(!items)return;
+  if(cart.length===0){
+    if(empty)empty.style.display='block';
+    if(items)items.style.display='none';
+    if(summary)summary.style.display='none';
+    const cbtn=document.getElementById('checkout-btn');
+    if(cbtn)cbtn.style.display='none';
+    return;
+  }
+  if(empty)empty.style.display='none';
+  if(items)items.style.display='';
+  if(summary)summary.style.display='';
+  const cbtn=document.getElementById('checkout-btn');
+  if(cbtn)cbtn.style.display='';
+  let h='';
+  cart.forEach((item,i)=>{
+    h+=`<div class="cart-item">
+      <div style="flex:1;"><p style="font-size:14px;font-weight:600;">${item.name}</p><p style="font-size:12px;color:var(--mu);">₦${item.price.toLocaleString()} each</p></div>
+      <div class="qty-ctrl">
+        <button class="qty-btn" onclick="changeQty(${i},-1)" style="font-size:14px;">−</button>
+        <span style="font-size:15px;font-weight:700;min-width:24px;text-align:center;">${item.qty}</span>
+        <button class="qty-btn plus" onclick="changeQty(${i},1)">+</button>
+      </div>
+      <p style="font-size:14px;font-weight:700;color:var(--or);min-width:60px;text-align:right;">₦${item.total.toLocaleString()}</p>
+    </div>`;
+  });
+  items.innerHTML=h;
+  const subtotal=cart.reduce((s,i)=>s+i.total,0);
+  const grand=subtotal+500+500;
+  const sub=document.getElementById('cart-subtotal');
+  const tot=document.getElementById('cart-total');
+  const totbtn=document.getElementById('cart-total-btn');
+  if(sub)sub.textContent='₦'+subtotal.toLocaleString();
+  if(tot)tot.textContent='₦'+grand.toLocaleString();
+  if(totbtn)totbtn.textContent='₦'+grand.toLocaleString();
+}
+function changeQty(i,d){
+  cart[i].qty+=d;
+  cart[i].total=cart[i].qty*cart[i].price;
+  if(cart[i].qty<=0)cart.splice(i,1);
+  renderCart();
+  const total=cart.reduce((s,i)=>s+i.qty,0);
+  const b=document.getElementById('cart-badge');
+  if(b)b.textContent=total||'0';
+}
+function clearCart(){cart=[];renderCart();}
+
+// ── PAYMENT ───────────────────────────────────────────
+function syncPaymentAmount(){
+  const subtotal=cart.reduce((s,i)=>s+i.total,0)||4500;
+  const grand=subtotal+500+500;
+  const pa=document.getElementById('pay-amount');
+  const pb=document.getElementById('pay-breakdown');
+  const pba=document.getElementById('pay-btn-amt');
+  const ta=document.getElementById('transfer-amount');
+  if(pa)pa.textContent='₦'+grand.toLocaleString();
+  if(pb)pb.textContent='Items ₦'+subtotal.toLocaleString()+' + Delivery ₦500 + Platform ₦500';
+  if(pba)pba.textContent='₦'+grand.toLocaleString();
+  if(ta)ta.textContent='₦'+grand.toLocaleString();
+  document.getElementById('paid-amount').textContent='₦'+grand.toLocaleString();
+}
+function selectPayMethod(m){
+  selectedPayMethod=m;
+  ['card','transfer','ussd'].forEach(x=>{
+    const el=document.getElementById('pm-'+x);
+    const chk=document.getElementById('pm-'+x+'-chk');
+    const sel=m===x;
+    el.style.borderColor=sel?'var(--or)':'var(--bd)';
+    el.style.borderWidth=sel?'2px':'.5px';
+    chk.style.background=sel?'var(--or)':'var(--bg)';
+    chk.style.border=sel?'none':'1.5px solid var(--bd)';
+    chk.textContent=sel?'✓':'';
+    chk.style.color=sel?'#fff':'';
+    chk.style.fontSize=sel?'12px':'';
+    chk.style.fontWeight=sel?'700':'';
+    chk.style.display=sel?'flex':'';
+    chk.style.alignItems=sel?'center':'';
+    chk.style.justifyContent=sel?'center':'';
+  });
+  document.getElementById('card-form').style.display=m==='card'?'':'none';
+  document.getElementById('transfer-form').style.display=m==='transfer'?'':'none';
+  document.getElementById('ussd-form').style.display=m==='ussd'?'':'none';
+}
+function processPayment(){
+  const btn=document.getElementById('pay-btn');
+  btn.textContent='Processing...';btn.disabled=true;
+  const methods={card:'Debit card',transfer:'Bank transfer',ussd:'USSD'};
+  document.getElementById('paid-method').textContent=methods[selectedPayMethod]||'Debit card';
+  document.getElementById('pay-ref').textContent='Ref: ERD-'+Date.now().toString().slice(-8);
+  setTimeout(()=>{
+    go('s-pay-success');
+    cart=[];
+    btn.textContent='Pay '+document.getElementById('pay-btn-amt').textContent+' securely →';
+    btn.disabled=false;
+  },1800);
+}
+function dialUSSD(code){
+  window.location.href='tel:*'+code+'%23';
+}
+
+// ── OUTLET FILTER ─────────────────────────────────────
+function filterOutlets(type,pill){
+  document.querySelectorAll('.pills .pill').forEach(p=>p.classList.remove('on'));
+  pill.classList.add('on');
+  document.querySelectorAll('#outlet-list .outlet-card').forEach(card=>{
+    card.style.display=(type==='all'||card.dataset.type===type)?'':'none';
+  });
+}
+
+// ── GENERAL ERRAND CALC ───────────────────────────────
+function calcGeneral(){
+  const t=(document.getElementById('gen-title')||{}).value||'';
+  const d=(document.getElementById('gen-desc')||{}).value||'';
+  const f=(document.getElementById('gen-from')||{}).value||'';
+  const o=(document.getElementById('gen-to')||{}).value||'';
+  const txt=(t+' '+d+' '+f+' '+o).toLowerCase();
+  let extra=0;
+  if(txt.includes('lekki')||txt.includes('island')||txt.includes('ajah'))extra+=30;
+  if(txt.includes('mainland')||txt.includes('ikorodu')||txt.includes('apapa'))extra+=30;
+  if(txt.includes('market')||txt.includes('shop')||txt.includes('buy'))extra+=30;
+  if(d.length>100)extra+=30;
+  const blocks=Math.ceil(extra/30);
+  const fee=3500+(blocks*1000);
+  const grand=fee+500;
+  const mins=60+extra;
+  const h=Math.floor(mins/60),m=mins%60;
+  const lbl=m>0?`~${h}hr ${m}min`:`~${h} hour${h>1?'s':''}`;
+  const el=(id)=>document.getElementById(id);
+  if(el('gen-fee'))el('gen-fee').textContent='₦'+fee.toLocaleString();
+  if(el('gen-timelbl'))el('gen-timelbl').textContent=lbl;
+  if(el('gen-total'))el('gen-total').textContent='₦'+grand.toLocaleString();
+  if(el('gen-btn-amt'))el('gen-btn-amt').textContent='₦'+grand.toLocaleString();
+  const er=el('gen-extra-row');
+  if(er){er.style.display=extra>0?'':'none';if(extra>0){el('gen-extra-lbl').textContent=`Extra ${extra}min (${blocks}×₦1,000)`;el('gen-extra-val').textContent='₦'+(blocks*1000).toLocaleString();}}
+}
+
+// ── DISPATCH CALC ─────────────────────────────────────
+function calcDispatch(){
+  const f=(document.getElementById('dis-from')||{}).value||'';
+  const t=(document.getElementById('dis-to')||{}).value||'';
+  const s=(document.getElementById('dis-size')||{}).value||'doc';
+  const txt=(f+' '+t).toLowerCase();
+  let km=15;
+  if(txt.includes('island')&&(txt.includes('mainland')||txt.includes('maryland')||txt.includes('yaba')))km=40;
+  else if(txt.includes('lekki')||txt.includes('ajah'))km=Math.max(km,25);
+  else if(txt.includes('ikorodu')||txt.includes('apapa'))km=Math.max(km,35);
+  km=Math.min(km,60);
+  const sur={doc:0,small:0,med:500,lg:1000}[s]||0;
+  const dist=km*100;
+  const grand=dist+sur+500;
+  const el=(id)=>document.getElementById(id);
+  if(el('dis-fee'))el('dis-fee').textContent='₦'+dist.toLocaleString();
+  if(el('dis-kmlbl'))el('dis-kmlbl').textContent=`~${km} km`;
+  if(el('dis-km-row'))el('dis-km-row').textContent=`Distance (${km} km × ₦100)`;
+  if(el('dis-km-val'))el('dis-km-val').textContent='₦'+dist.toLocaleString();
+  if(el('dis-size-val'))el('dis-size-val').textContent=sur>0?'₦'+sur.toLocaleString():'₦0';
+  if(el('dis-total'))el('dis-total').textContent='₦'+grand.toLocaleString();
+  if(el('dis-btn-amt'))el('dis-btn-amt').textContent='₦'+grand.toLocaleString();
+}
+
+// ── ARTISAN PICKER ────────────────────────────────────
+const artIds=['cleaning','plumbing','electrical','ac','painting','other'];
+function pickArtisan(type){
+  artIds.forEach(id=>{
+    const el=document.getElementById('art-'+id);
+    if(!el)return;
+    el.style.background='var(--bg)';el.style.color='var(--mu)';el.style.border='1.5px solid var(--bd)';
+  });
+  const sel=document.getElementById('art-'+type);
+  if(sel){sel.style.background='var(--or)';sel.style.color='#fff';sel.style.border='2px solid var(--or)';}
+}
+
+// ── MILESTONES ────────────────────────────────────────
+function renderMS(){
+  const c=document.getElementById('ms-container');if(!c)return;
+  let h='';
+  msData.forEach((m,i)=>{
+    const dc=m.done?'done':(m.act?'act':'pend');
+    const di=m.done?'✓':(i+1);
+    const lc=m.done?'done':'pend';
+    const ts=m.done?'text-decoration:line-through;color:var(--hi);':(m.act?'color:var(--or);font-weight:700;':'color:var(--hi);');
+    h+=`<div style="display:flex;gap:12px;padding-bottom:${i<msData.length-1?'4':'0'}px;">
+      <div style="display:flex;flex-direction:column;align-items:center;">
+        <div class="ms-dot ${dc}">${di}</div>
+        ${i<msData.length-1?`<div class="ms-line ${lc}"></div>`:''}
+      </div>
+      <div style="padding-top:4px;padding-bottom:${i<msData.length-1?'8':'0'}px;">
+        <p style="font-size:14px;${ts}">${m.l}</p>
+        ${m.done?'<p style="font-size:11px;color:var(--hi);margin-top:2px;">✓ Done</p>':''}
+      </div>
+    </div>`;
+  });
+  c.innerHTML=h;
+}
+function advanceMilestone(){
+  if(msStep>=6)return;
+  const prev=msData.findIndex(m=>m.act);
+  if(prev>-1){msData[prev].done=true;msData[prev].act=false;}
+  if(msStep<5)msData[msStep].act=true;
+  msStep++;
+  document.getElementById('ms-prog').style.width=Math.round((msStep/6)*100)+'%';
+  document.getElementById('ms-count').textContent=msStep+' / 6 steps';
+  renderMS();
+  if(msStep===6){document.getElementById('sim-btn').style.display='none';document.getElementById('confirm-btn').style.display='block';}
+}
+function confirmComplete(){
+  document.getElementById('confirm-btn').style.display='none';
+  const d=document.createElement('div');d.className='i-gn';d.style.marginTop='12px';d.style.textAlign='center';d.style.padding='18px';
+  d.innerHTML='<p style="font-size:26px;margin-bottom:8px;">🎉</p><p style="font-size:16px;font-weight:700;">Task complete!</p><p style="font-size:13px;margin-top:4px;">Payment released to Tasker.</p>';
+  document.getElementById('ms-container').insertAdjacentElement('afterend',d);
+}
+function trackTab(n){
+  document.getElementById('tt1').classList.toggle('on',n===1);
+  document.getElementById('tt2').classList.toggle('on',n===2);
+  document.getElementById('track-panel').style.display=n===1?'':'none';
+  document.getElementById('chat-panel').style.display=n===2?'flex':'none';
+}
+function sendChatMsg(){
+  const inp=document.getElementById('chat-input');
+  if(!inp||!inp.value.trim())return;
+  const txt=inp.value.trim();inp.value='';
+  appendMsg(txt,true);
+  setTimeout(()=>appendMsg(chatReplies[Math.floor(Math.random()*chatReplies.length)],false,'Emeka'),900);
+}
+function appendMsg(text,isMe,sender){
+  const c=document.getElementById('chat-msgs');if(!c)return;
+  const now=new Date();const t=now.getHours()+':'+String(now.getMinutes()).padStart(2,'0');
+  const d=document.createElement('div');
+  d.style.cssText='display:flex;flex-direction:column;align-items:'+(isMe?'flex-end':'flex-start')+';';
+  d.innerHTML=(!isMe&&sender?`<p style="font-size:10px;color:var(--hi);margin-bottom:4px;">${sender}</p>`:'')+`<div class="${isMe?'bm':'bt'}">${text}</div><p class="ct" style="${isMe?'text-align:right;':''}">${t}</p>`;
+  c.appendChild(d);c.scrollTop=c.scrollHeight;
+}
+function taskerAdvance(){
+  tkStep++;
+  if(tkStep>5){
+    const btn=document.getElementById('tk-advance');
+    btn.textContent='Waiting for client confirmation...';btn.disabled=true;btn.style.opacity='.4';
+    document.getElementById('tk-label').textContent='All milestones complete!';
+    document.getElementById('tk-photo').style.display='none';return;
+  }
+  document.getElementById('tk-step').textContent=tkStep;
+  document.getElementById('tk-label').textContent=tkLabels[tkStep-3]||'Done';
+}
+function taskPhotoSim(){
+  const a=document.getElementById('tk-photo');
+  a.innerHTML='<p style="font-size:14px;color:var(--gn);font-weight:700;">✓ Photo attached</p><p style="font-size:11px;color:var(--hi);margin-top:3px;">proof_photo.jpg</p>';
+  a.style.background='var(--gb)';a.style.borderColor='#B8E8CC';
+}
+
+// ── MAP ───────────────────────────────────────────────
+function simDrive(){
+  const btn=document.getElementById('drive-btn');
+  if(navInterval){clearInterval(navInterval);navInterval=null;btn.textContent='Simulate drive →';navStep=0;return;}
+  btn.textContent='Driving... (tap to stop)';navStep=0;
+  navInterval=setInterval(()=>{
+    if(navStep>=navSteps.length-1){
+      clearInterval(navInterval);navInterval=null;btn.textContent='Simulate drive →';
+      document.getElementById('nav-instruction').textContent='✅ Arrived at Lekki Phase 1';
+      document.getElementById('nav-sub').textContent='Collect documents and proceed';
+      navStep=0;return;
+    }
+    navStep++;const s=navSteps[navStep];
+    document.getElementById('nav-instruction').textContent=s.t;
+    document.getElementById('nav-sub').textContent=s.s;
+    document.getElementById('nav-eta').textContent=s.e;
+    document.getElementById('nav-dist').textContent=s.d;
+    document.getElementById('nav-time').textContent=s.tm;
+    document.getElementById('nav-progress').style.width=s.p+'%';
+    const ico=document.getElementById('turn-icon');
+    if(s.left)ico.innerHTML='<polyline points="15 18 9 12 15 6"/><line x1="9" y1="12" x2="20" y2="12"/>';
+    else if(s.right)ico.innerHTML='<polyline points="9 18 15 12 9 6"/><line x1="15" y1="12" x2="4" y2="12"/>';
+    else ico.innerHTML='<line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>';
+  },1500);
+}
+
+// ── EARNINGS ──────────────────────────────────────────
+function doWithdraw(){
+  const btn=document.getElementById('wd-btn');
+  btn.textContent='✓ Initiated';btn.style.background='var(--gn)';btn.disabled=true;
+  setTimeout(()=>{
+    document.getElementById('earn-balance').textContent='₦0.00';
+    setTimeout(()=>{document.getElementById('earn-balance').textContent='₦14,000.00';btn.textContent='Withdraw to GTBank';btn.style.background='var(--or)';btn.disabled=false;},2000);
+  },600);
+}
+
+// ── INIT ─────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded',()=>{
+  renderMS();calcGeneral();calcDispatch();
+  // Pre-load cart with demo items
+  cart=[
+    {name:'Jollof Rice + Chicken',price:1800,qty:2,total:3600},
+    {name:'Zobo Drink',price:500,qty:1,total:500},
+    {name:'Coleslaw',price:400,qty:1,total:400}
+  ];
+  document.addEventListener('touchmove',e=>{if(!e.target.closest('.scroll'))e.preventDefault();},{passive:false});
+});
+</script>
+</body>
+</html>
